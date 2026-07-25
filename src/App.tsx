@@ -111,15 +111,18 @@ export default function App() {
   useEffect(() => {
     const config = decodeConfigFromHash()
     if (config) {
-      app.patchState((current) => ({
-        ...current,
-        apiKey: config.k,
-        apiBase: config.b || current.apiBase,
-        model: config.m || current.model,
-      }))
+      // 先保存到 localStorage，再刷新页面让完整应用加载
+      try {
+        const saved = localStorage.getItem('exploratory-learning-state')
+        const state = saved ? JSON.parse(saved) : {}
+        state.apiKey = config.k
+        if (config.b) state.apiBase = config.b
+        if (config.m) state.model = config.m
+        localStorage.setItem('exploratory-learning-state', JSON.stringify(state))
+      } catch { /* ignore parse error */ }
       clearConfigHash()
-      setNotice('已从分享链接自动导入 API 配置！现在可以直接开始使用了，无需手动设置。')
-      // Don't open settings modal — the user can start using immediately
+      // 分享链接首次打开，刷新页面确保 SW 注册和新配置加载
+      window.location.reload()
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
