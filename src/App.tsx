@@ -782,6 +782,13 @@ export default function App() {
             selectedNodeId={app.state.selectedNodeId}
             onClose={() => setGraphOpen(false)}
             onOpenNode={(nodeId: string) => jumpToNode(nodeId, { closeModal: () => setGraphOpen(false), source: '图谱' })}
+            editMode={app.knowledgeGraph.editMode}
+            onSetEditMode={app.knowledgeGraph.setEditMode}
+            linkSourceId={app.knowledgeGraph.linkSourceId}
+            onEditNodeClick={app.knowledgeGraph.handleEditNodeClick}
+            onToggleLink={app.toggleLink}
+            onSetNodePosition={app.knowledgeGraph.setNodePosition}
+            onResetLayout={app.knowledgeGraph.resetLayout}
           />
         )}
 
