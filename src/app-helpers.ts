@@ -16,30 +16,31 @@ export function roleFromFollowupType(type?: FollowupType): LearningRole {
 }
 
 export function sanitizeFollowups(items: GeneratedPayload['followups'], question: string): FollowupQuestion[] {
+  const qShort = clampText(question, 16)
   const defaults: FollowupQuestion[] = [
     {
       id: uid('fu'),
-      question: `这个问题最容易误解的地方是什么？`,
+      question: `"${qShort}"最常见的误解是什么？`,
       type: 'boundary',
-      reason: '先排除常见误区，后面学习会更稳。',
+      reason: '排除常见误区，后续学习更稳。',
       difficulty: 2,
-      expected_gain: '知道这个概念的边界和常见错误理解。',
+      expected_gain: `知道"${qShort}"的边界和常见错误理解。`,
     },
     {
       id: uid('fu'),
-      question: `能不能用一个生活例子解释"${clampText(question, 12)}"？`,
+      question: `能不能用日常生活的例子解释"${qShort}"？`,
       type: 'example',
       reason: '用例子把抽象内容落到直觉层面。',
       difficulty: 1,
-      expected_gain: '形成更容易记住的直观理解。',
+      expected_gain: `形成关于"${qShort}"的直观理解。`,
     },
     {
       id: uid('fu'),
-      question: `它在真实场景中有什么应用？`,
+      question: `"${qShort}"在实际中有什么应用？`,
       type: 'application',
       reason: '把当前知识连接到具体使用场景。',
       difficulty: 2,
-      expected_gain: '知道这个知识为什么值得学。',
+      expected_gain: `知道"${qShort}"为什么值得学。`,
     },
   ]
 
