@@ -86,6 +86,7 @@ export function useAppState() {
     setCheckStatus: nodeActions.setCheckStatus,
     recordFeedback: nodeActions.recordFeedback,
     replaceFollowups: nodeActions.replaceFollowups,
+    toggleLink: nodeActions.toggleLink,
     exportTopicAsTemplate,
     exportData,
     importData,
