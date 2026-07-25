@@ -163,10 +163,12 @@ export function useGeneration(
     // Step 2: Add all successfully generated nodes to state sequentially
     // (state updates are functional, so no race conditions; addNode uses setState updater form)
     let successCount = 0
+    let firstNewNodeId: string | null = null
     let firstFailedDraft: GenerateNodeResult['failedDraft'] = undefined
     for (const result of results) {
       if (result.node) {
         actions.addNode(result.node)
+        if (!firstNewNodeId) firstNewNodeId = result.node.id
         successCount += 1
       } else if (result.failedDraft && !firstFailedDraft) {
         firstFailedDraft = result.failedDraft
@@ -177,13 +179,17 @@ export function useGeneration(
     setIsGenerating(false)
 
     if (successCount > 0) {
-      // Keep parent node selected so user sees the parent with updated children list
-      actions.openNode(parentId)
-      window.setTimeout(() => answerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 160)
+      // Auto-navigate to the first newly created child node so the user sees it immediately
+      if (firstNewNodeId) {
+        actions.openNode(firstNewNodeId)
+        window.setTimeout(() => answerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 160)
+      }
       if (successCount === limited.length) {
-        setNotice(`已生成 ${successCount} 个追问节点，可在知识树中查看。`)
+        setNotice(successCount === 1
+          ? `已生成追问节点，已自动跳转到新内容。`
+          : `已生成 ${successCount} 个追问节点，已跳转到第一个。其余可在知识树中查看。`)
       } else {
-        setNotice(`已生成 ${successCount}/${limited.length} 个追问节点，部分生成失败。`)
+        setNotice(`已生成 ${successCount}/${limited.length} 个追问节点，已跳转到第一个。`)
       }
     } else {
       if (firstFailedDraft) {
