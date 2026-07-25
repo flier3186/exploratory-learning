@@ -240,6 +240,79 @@ function TrendLine({ nodes }: { nodes: LearningNode[] }) {
 }
 
 // ---------------------------------------------------------------------------
+// EfficiencyTrendLine (inline sub-component)
+// ---------------------------------------------------------------------------
+
+function EfficiencyTrendLine({ weeklyData }: {
+  weeklyData: { weekLabel: string; passRate: number; checkedCount: number }[]
+}) {
+  const chartW = 260
+  const chartH = 80
+  const padLeft = 30
+  const padTop = 10
+
+  const points = weeklyData.map((d, idx) => {
+    const x = padLeft + (idx / (weeklyData.length - 1)) * chartW
+    const y = padTop + chartH - d.passRate * chartH
+    return { x: x.toFixed(1), y: y.toFixed(1), ...d }
+  })
+
+  const linePoints = points.map((p) => `${p.x},${p.y}`).join(' ')
+
+  return (
+    <svg viewBox="0 0 300 120" className="efficiency-svg" role="img" aria-label="学习效率趋势">
+      <defs>
+        <linearGradient id="effGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#3f8d70" stopOpacity={0.3} />
+          <stop offset="100%" stopColor="#3f8d70" stopOpacity={0.02} />
+        </linearGradient>
+      </defs>
+      {/* Grid lines */}
+      <line x1={30} y1={10} x2={30} y2={90} stroke="rgba(91, 64, 35, 0.1)" strokeWidth={0.5} />
+      <line x1={30} y1={90} x2={290} y2={90} stroke="rgba(91, 64, 35, 0.16)" strokeWidth={0.5} />
+      <line x1={30} y1={50} x2={290} y2={50} stroke="rgba(91, 64, 35, 0.08)" strokeWidth={0.5} strokeDasharray="2,2" />
+      {/* Y-axis labels */}
+      <text x={26} y={14} textAnchor="end" fontSize="7" fill="#a2917c">100%</text>
+      <text x={26} y={53} textAnchor="end" fontSize="7" fill="#a2917c">50%</text>
+      <text x={26} y={93} textAnchor="end" fontSize="7" fill="#a2917c">0%</text>
+      {/* Area fill */}
+      {linePoints && (
+        <polygon points={`30,90 ${linePoints} 290,90`} fill="url(#effGrad)" />
+      )}
+      {/* Line */}
+      {linePoints && (
+        <polyline
+          points={linePoints}
+          fill="none"
+          stroke="#3f8d70"
+          strokeWidth={1.5}
+          strokeLinejoin="round"
+        />
+      )}
+      {/* Data points */}
+      {points.map((p, i) => (
+        <g key={i}>
+          <circle cx={p.x} cy={p.y} r={2.5} fill="#3f8d70" />
+          {p.checkedCount > 0 && (
+            <text x={p.x} y={parseInt(p.y) - 5} textAnchor="middle" fontSize="6" fill="#3f8d70">
+              {Math.round(p.passRate * 100)}%
+            </text>
+          )}
+        </g>
+      ))}
+      {/* X-axis labels */}
+      {points.map((p, i) => (
+        (i % 2 === 0 || i === points.length - 1) && (
+          <text key={`lbl-${i}`} x={p.x} y={105} textAnchor="middle" fontSize="7" fill="#a2917c">
+            {p.weekLabel}
+          </text>
+        )
+      ))}
+    </svg>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // StatsModal
 // ---------------------------------------------------------------------------
 
@@ -355,6 +428,71 @@ export function StatsModal(props: {
       .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
       .slice(0, 10)
 
+    // 7. Weekly efficiency trend (last 8 weeks)
+    //    For each week, compute the pass rate of understanding checks
+    const weeklyEfficiency: { weekLabel: string; passRate: number; checkedCount: number }[] = []
+    const weekMs = 7 * DAY_MS
+    for (let w = 7; w >= 0; w--) {
+      const weekStart = nowTs - (w + 1) * weekMs
+      const weekEnd = nowTs - w * weekMs
+      const weekNodes = nodeList.filter(
+        (n) => n.mastery.checked_at !== undefined &&
+          n.mastery.checked_at >= weekStart &&
+          n.mastery.checked_at < weekEnd,
+      )
+      const checkedCount = weekNodes.length
+      const passedCount = weekNodes.filter((n) => n.mastery.check_status === 'understood').length
+      const passRate = checkedCount > 0 ? passedCount / checkedCount : 0
+      const d = new Date(weekEnd)
+      weeklyEfficiency.push({
+        weekLabel: `${d.getMonth() + 1}/${d.getDate()}`,
+        passRate,
+        checkedCount,
+      })
+    }
+
+    // 8. SRS completion rate: nodes that are due (next_review_at <= now) and have been checked
+    const srsDueNodes = nodeList.filter(
+      (n) => n.mastery.next_review_at !== undefined && n.mastery.next_review_at <= nowTs,
+    )
+    const srsCheckedCount = srsDueNodes.filter(
+      (n) => n.mastery.check_status !== 'untested',
+    ).length
+    const srsCompletionRate = srsDueNodes.length > 0 ? srsCheckedCount / srsDueNodes.length : 0
+
+    // 9. Retention estimate: based on SRS interval and confidence
+    //    R = exp(-t / S) where t = days since last review, S = stability estimate
+    //    Stability ≈ srs_interval * (confidence / 3) (simplified)
+    const retentionNodes = nodeList.filter(
+      (n) => n.mastery.is_visited && n.mastery.srs_interval !== undefined,
+    )
+    let totalRetention = 0
+    let retentionCount = 0
+    for (const n of retentionNodes) {
+      const daysSinceReview = n.mastery.checked_at !== undefined
+        ? (nowTs - n.mastery.checked_at) / DAY_MS
+        : 0
+      const stability = Math.max(1, (n.mastery.srs_interval ?? 1) * ((n.mastery.confidence ?? 3) / 3))
+      const retention = Math.exp(-daysSinceReview / stability)
+      totalRetention += retention
+      retentionCount++
+    }
+    const avgRetention = retentionCount > 0 ? totalRetention / retentionCount : 0
+
+    // 10. This week / this month active days
+    const weekAgoTs = nowTs - 7 * DAY_MS
+    const monthAgoTs = nowTs - 30 * DAY_MS
+    const weekActiveDays = new Set(
+      nodeList
+        .filter((n) => n.created_at >= weekAgoTs)
+        .map((n) => Math.floor(n.created_at / DAY_MS))
+    ).size
+    const monthActiveDays = new Set(
+      nodeList
+        .filter((n) => n.created_at >= monthAgoTs)
+        .map((n) => Math.floor(n.created_at / DAY_MS))
+    ).size
+
     return {
       totalNodes,
       starredCount,
@@ -370,6 +508,13 @@ export function StatsModal(props: {
       sparkBuckets,
       maxSpark,
       topTags,
+      weeklyEfficiency,
+      srsCompletionRate,
+      srsDueCount: srsDueNodes.length,
+      avgRetention,
+      retentionCount,
+      weekActiveDays,
+      monthActiveDays,
     }
   }, [nodes])
 
@@ -658,6 +803,127 @@ export function StatsModal(props: {
             <h3>30 天学习趋势</h3>
             <div className="trend-wrap">
               <TrendLine nodes={Object.values(nodes)} />
+            </div>
+          </section>
+        )}
+
+        {/* 12. Learning efficiency trend (weekly pass rate) */}
+        {profile.total_nodes > 0 && stats.weeklyEfficiency.some((w) => w.checkedCount > 0) && (
+          <section className="stats-section">
+            <h3>学习效率趋势</h3>
+            <div className="efficiency-wrap">
+              <EfficiencyTrendLine weeklyData={stats.weeklyEfficiency} />
+              <p className="stats-hint">
+                每周理解检测通过率，反映学习效率变化。检测次数越多，数据越准确。
+              </p>
+            </div>
+          </section>
+        )}
+
+        {/* 13. Retention estimate */}
+        {stats.retentionCount > 0 && (
+          <section className="stats-section">
+            <h3>知识留存率预估</h3>
+            <div className="retention-wrap">
+              <div className="retention-gauge">
+                <svg viewBox="0 0 120 70" className="retention-svg" role="img" aria-label="知识留存率">
+                  {/* Background arc */}
+                  <path
+                    d="M 10 60 A 50 50 0 0 1 110 60"
+                    fill="none"
+                    stroke="rgba(91, 64, 35, 0.12)"
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                  />
+                  {/* Data arc */}
+                  <path
+                    d="M 10 60 A 50 50 0 0 1 110 60"
+                    fill="none"
+                    stroke={stats.avgRetention > 0.7 ? '#3f8d70' : stats.avgRetention > 0.4 ? '#b8751a' : '#b84040'}
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeDasharray={`${stats.avgRetention * 157} 157`}
+                  />
+                  <text x="60" y="50" textAnchor="middle" fontSize="18" fontWeight="700" fill="#5b4023">
+                    {Math.round(stats.avgRetention * 100)}%
+                  </text>
+                  <text x="60" y="64" textAnchor="middle" fontSize="7" fill="#a2917c">留存率</text>
+                </svg>
+              </div>
+              <div className="retention-detail">
+                <p>基于 {stats.retentionCount} 个已学习节点的 SRS 间隔和掌握度估算。</p>
+                <p className="retention-advice">
+                  {stats.avgRetention > 0.7
+                    ? '记忆状态良好，继续按计划复习即可。'
+                    : stats.avgRetention > 0.4
+                      ? '部分知识开始遗忘，建议优先复习到期节点。'
+                      : '大量知识可能已遗忘，建议集中复习薄弱环节。'}
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* 14. SRS completion rate */}
+        {stats.srsDueCount > 0 && (
+          <section className="stats-section">
+            <h3>复习完成率</h3>
+            <div className="srs-completion-wrap">
+              <div className="srs-completion-bar">
+                <div
+                  className="srs-completion-fill"
+                  style={{ width: `${stats.srsCompletionRate * 100}%` }}
+                />
+              </div>
+              <span className="srs-completion-text">
+                {Math.round(stats.srsCompletionRate * 100)}% · {stats.srsDueCount} 个待复习
+              </span>
+            </div>
+          </section>
+        )}
+
+        {/* 15. Learning rhythm analysis */}
+        {profile.total_nodes >= 5 && (
+          <section className="stats-section">
+            <h3>学习节奏分析</h3>
+            <div className="rhythm-grid">
+              <div className="rhythm-card">
+                <span className="rhythm-icon">
+                  {profile.learning_rhythm.preferred_time_of_day === 'morning' && '🌅'}
+                  {profile.learning_rhythm.preferred_time_of_day === 'afternoon' && '☀️'}
+                  {profile.learning_rhythm.preferred_time_of_day === 'evening' && '🌆'}
+                  {profile.learning_rhythm.preferred_time_of_day === 'night' && '🌙'}
+                  {profile.learning_rhythm.preferred_time_of_day === 'unknown' && '⏰'}
+                </span>
+                <span className="rhythm-value">
+                  {profile.learning_rhythm.preferred_time_of_day === 'morning' && '上午'}
+                  {profile.learning_rhythm.preferred_time_of_day === 'afternoon' && '下午'}
+                  {profile.learning_rhythm.preferred_time_of_day === 'evening' && '晚间'}
+                  {profile.learning_rhythm.preferred_time_of_day === 'night' && '深夜'}
+                  {profile.learning_rhythm.preferred_time_of_day === 'unknown' && '未知'}
+                </span>
+                <span className="rhythm-label">偏好时段</span>
+              </div>
+              <div className="rhythm-card">
+                <span className="rhythm-value">{profile.learning_rhythm.avg_nodes_per_session.toFixed(1)}</span>
+                <span className="rhythm-label">平均每次节点</span>
+              </div>
+              <div className="rhythm-card">
+                <span className="rhythm-value">{profile.learning_rhythm.avg_session_gap_hours.toFixed(1)}h</span>
+                <span className="rhythm-label">平均会话间隔</span>
+              </div>
+              <div className="rhythm-card">
+                <span className="rhythm-value">{stats.weekActiveDays}</span>
+                <span className="rhythm-label">本周活跃</span>
+              </div>
+              <div className="rhythm-card">
+                <span className="rhythm-value">{stats.monthActiveDays}</span>
+                <span className="rhythm-label">本月活跃</span>
+              </div>
+              <div className="rhythm-card">
+                <span className="rhythm-value">{profile.learning_rhythm.active_days_30}</span>
+                <span className="rhythm-label">30天活跃</span>
+              </div>
             </div>
           </section>
         )}
