@@ -1,154 +1,262 @@
-# 探索式 AI 学习工具 MVP
+# 探索式 AI 学习工具
 
-这是基于 `v3.1` 设计方案实现的纯前端自用 MVP。
+用追问，把答案变成知识树。一个纯前端 PWA 应用，通过 AI 生成结构化学习卡片、推荐追问、理解检测和间隔复习，帮助用户真正弄懂问题。
 
-## 产品方向
+线上地址：https://exploratory-learning.pages.dev/
 
-目标是尽量覆盖多种学习场景，包括技术/编程/AI、商业/产品/管理、考试/课程、语言学习、科普/通识、投资/金融研究、医学/健康科普等。
+## 技术栈
 
-默认输出风格融合：
+| 层 | 选型 |
+|---|---|
+| 框架 | React 19 + TypeScript 6 |
+| 构建 | Vite 8 |
+| 测试 | Vitest 4 + React Testing Library + jsdom |
+| 持久化 | localStorage（无后端） |
+| PWA | Service Worker + Web App Manifest |
+| 部署 | Cloudflare Pages（GitHub Actions 自动部署） |
+| AI | 用户自配 API Key 直连大模型（默认 DeepSeek，支持智谱/通义千问/Groq） |
 
-- 教练式：通过追问和理解检测帮助用户自己建立理解
-- 教材式：结构完整，先结论，再机制，再例子，再易错点
-- 研究员式：明确假设、边界和不确定性，事实类问题强调核验
+运行时仅依赖 React 和 React-DOM，无 UI 库、无状态管理库、无路由库。Markdown 渲染和知识图谱布局均为自研。
 
-核心目标不是“回答很多”，而是让用户真的弄懂问题。
+## 目录结构
 
-## 已实现功能
+```
+project/
+├── .github/workflows/
+│   └── deploy.yml                      # Cloudflare Pages 自动部署工作流
+├── public/
+│   ├── templates/                       # 内置知识模板
+│   │   ├── critical-thinking.json
+│   │   ├── learning-methods.json
+│   │   └── prompt-thinking.json
+│   ├── app-icon.svg                     # PWA 应用图标
+│   ├── favicon.svg
+│   ├── manifest.webmanifest             # PWA 清单
+│   └── sw.js                            # Service Worker（离线缓存 v8）
+├── src/
+│   ├── components/                      # UI 组件层
+│   │   ├── ErrorBoundary.tsx            # 错误边界 + 降级 UI
+│   │   ├── FeynmanModal.tsx             # 费曼检验弹窗
+│   │   ├── KnowledgeGraphModal.tsx      # 知识图谱可视化
+│   │   ├── LearningCard.tsx             # 核心学习卡片
+│   │   ├── LearningPathModal.tsx        # 学习路径推荐
+│   │   ├── MarkdownText.tsx             # 轻量 Markdown 渲染
+│   │   ├── NodeTree.tsx                 # 侧边栏知识树
+│   │   ├── Onboarding.tsx               # 新手引导
+│   │   ├── QuizModal.tsx                # 闪测弹窗
+│   │   ├── ReviewModal.tsx              # 复习弹窗
+│   │   ├── SearchModal.tsx              # 知识搜索
+│   │   ├── SettingsModal.tsx            # 设置弹窗
+│   │   ├── StatsModal.tsx               # 学习统计
+│   │   └── TemplateMarket.tsx           # 模板市场
+│   ├── graph/                           # 知识图谱布局（纯函数）
+│   │   ├── colors.ts                    # 掌握度/角色/连线配色
+│   │   ├── edges.ts                     # SVG 连线路径计算
+│   │   └── layout.ts                    # Sugiyama 分层布局算法
+│   ├── hooks/                           # React 业务逻辑
+│   │   ├── useAppState.ts               # 顶层状态中枢
+│   │   ├── useGeneration.ts             # AI 卡片生成
+│   │   ├── useVoiceInput.ts             # 语音输入
+│   │   ├── useFeynman.ts                # 费曼检验
+│   │   ├── useQuiz.ts                   # 闪测会话
+│   │   ├── use-node-actions.ts          # 节点操作
+│   │   ├── use-search.ts                # 搜索
+│   │   ├── use-review.ts                # 复习筛选
+│   │   ├── use-import-export.ts         # 导入导出
+│   │   ├── use-knowledge-graph.ts       # 图谱数据计算
+│   │   ├── use-learning-path.ts         # 学习路径推荐
+│   │   └── use-streak.ts                # 连续学习统计
+│   ├── test/
+│   │   └── setup.ts                     # 测试环境初始化
+│   ├── ai.ts                            # AI Prompt 构建 + 模型调用 + JSON 校验
+│   ├── app-helpers.ts                   # Payload 转节点 + 上下文构建
+│   ├── constants.ts                     # 全局常量 + 初始状态
+│   ├── learning-profile.ts              # 学习画像自动计算
+│   ├── learning.ts                      # 搜索评分 + 复习排序
+│   ├── main.tsx                         # 应用入口 + SW 注册
+│   ├── quiz-generator.ts                # 闪测/费曼题目生成
+│   ├── spaced-repetition.ts             # SM-2 间隔复习算法
+│   ├── storage.ts                       # localStorage 持久化
+│   ├── types.ts                         # 全局类型定义
+│   ├── utils.ts                         # 通用工具函数
+│   └── styles*.css                      # 10 个分模块样式文件
+├── push.py                              # GitHub 推送辅助脚本
+├── index.html
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+├── netlify.toml                         # Netlify 部署配置
+└── vercel.json                          # Vercel 部署配置
+```
 
-- 主题管理
-- 学习卡片生成
-- DeepSeek API Key 设置
-- 无 API Key 时的演示生成
-- 一次主调用输出答案、追问、短标题、标签和一句话记忆点
-- JSON 输出模式、结构校验和质量提示
-- API 请求超时、错误分级和失败不入库
-- 生成失败后保留问题并支持一键重试
-- 事实类、时效类、医学/法律/金融类问题的需核验提示
-- 事实类问题单独展示“可以先学 / 必须查证 / 建议来源 / 暂不下结论”
-- 追问生成会携带父节点摘要、易错点、标签和核验提示，减少偏题
-- 知识树节点层级
-- `learning_role` 角色标签和颜色
-- 推荐追问卡片
-- `换一批 / 更基础 / 更应用 / 更有挑战 / 更系统`
-- 追问反馈与本地偏好记忆
-- `Ctrl+K` 知识搜索
-- 标签、短标题、路径、摘要搜索结果
-- 已读、星标、掌握度
-- 理解检测和复习入口
-- 浏览器原生语音输入和摘要朗读
-- JSON 导入和导出
-- localStorage 本地持久化
-- 首次使用引导
-- 设置页本地安全说明
+## 核心模块
 
-## 运行方式
+### 数据模型
+
+`types.ts` 定义了项目的全部类型系统。核心数据结构：
+
+| 类型 | 说明 |
+|------|------|
+| `LearningNode` | 学习节点，包含问题、答案、追问、检测题、掌握度、SRS 字段、知识图谱连接 |
+| `AppState` | 应用状态，包含主题、节点字典、选中项、API 配置、用户偏好 |
+| `LearningProfile` | 学习画像，由行为数据自动生成，包含领域能力、认知风格、节奏、盲区 |
+| `PathStep` | 学习路径推荐步骤，按复习/盲区/巩固/探索分类 |
+| `GraphLayoutNode` | 图谱节点布局坐标，由 Sugiyama 算法计算 |
+
+### 业务逻辑层
+
+| 模块 | 职责 |
+|------|------|
+| `ai.ts` | 构建 Prompt（含学习画像注入）、调用大模型、解析 JSON、校验结构、修复字段、事实风险评估 |
+| `learning.ts` | 节点路径计算、搜索评分、复习候选筛选与优先级排序 |
+| `storage.ts` | localStorage 读写、导入节点/状态/模板的归一化与旧数据兼容 |
+| `learning-profile.ts` | 从用户行为（答题通过率、追问偏好、学习节奏）自动计算学习画像，生成 Prompt 注入摘要 |
+| `spaced-repetition.ts` | SM-2 算法实现：间隔/难度因子更新、到期判定、复习时间标签 |
+| `quiz-generator.ts` | 从理解检测题生成闪测题、构建闪测会话、费曼检验 Prompt |
+| `app-helpers.ts` | Followup 类型转角色、Payload 净化、兜底数据、Payload 转 LearningNode |
+| `graph/layout.ts` | Sugiyama 分层布局：分层分配、坐标计算、交叉减少、视口计算 |
+| `graph/edges.ts` | SVG 连线路径构建，区分 child/related/prerequisite 三种关系 |
+| `graph/colors.ts` | 掌握度配色、角色配色、连线样式 |
+
+### Hooks 层
+
+`useAppState.ts` 是顶层状态中枢，加载并自动持久化 state，聚合所有子 hook。其余 hook 各管一个垂直功能：
+
+- `useGeneration` — AI 卡片生成，管理生成步骤进度和失败重试
+- `useQuiz` — 闪测会话全流程，结束后更新 SRS
+- `useFeynman` — 费曼检验，提交讲解后 AI 评分
+- `useVoiceInput` — 浏览器原生 SpeechRecognition 封装
+- `use-node-actions` — 选中/删除/星标/置信度/检测状态/SRS 重置
+- `use-knowledge-graph` — 图谱数据计算与可见性过滤
+- `use-learning-path` — 路径推荐（复习到期/知识盲区/角色不平衡/未访问分支）
+- `use-streak` — 84 天热力图 + 7 天 SRS 周视图
+
+### 组件层
+
+`App.tsx` 编排全部 hooks 与弹窗，管理 UI 状态与渐进式功能解锁（首次创建节点后解锁复习按钮，第三次创建后解锁路径/图谱/统计）。14 个弹窗和卡片组件各自独立，通过 props 接收数据和回调。
+
+## 本地开发
 
 ```bash
 npm install
 npm run dev
 ```
 
-打开终端输出的本地地址即可使用。
+打开终端输出的本地地址即可使用。首次使用需在「设置」中填入 API Key。
 
-## 构建方式
+### 命令清单
+
+| 命令 | 作用 |
+|------|------|
+| `npm run dev` | 启动 Vite 开发服务器 |
+| `npm run build` | `tsc && vite build`，类型检查 + 生产构建到 `dist/` |
+| `npm run preview` | 预览构建产物 |
+| `npm test` | `vitest run`，单次运行全部测试 |
+| `npm run test:watch` | `vitest`，监听模式 |
+
+### 测试
+
+259 个测试覆盖 11 个文件，包括核心业务逻辑（AI 调用、存储、学习画像、间隔复习、搜索评分、闪测生成）和组件级测试（LearningCard、MarkdownText）。
 
 ```bash
-npm run build
+npm test
 ```
 
-构建产物会生成在 `dist/`。
+## 部署
 
-## 跨设备使用
+### Cloudflare Pages（当前主部署）
 
-本项目当前是纯前端应用，开发模式下只能在运行 `npm run dev` 的那台电脑上访问。换电脑打不开通常不是项目坏了，而是因为原电脑上的本地开发服务器没有在新电脑上运行。
+项目通过 GitHub Actions 自动部署到 Cloudflare Pages。每次推送到 `main` 分支，workflow 会自动构建并部署。
 
-如果希望电脑、手机、朋友设备都能打开，推荐部署到静态托管平台，例如 Vercel 或 Netlify。
+线上地址：https://exploratory-learning.pages.dev/
 
-### 部署到 Vercel
+#### 所需 Secrets
 
-1. 把项目上传到 GitHub 仓库。
-2. 打开 Vercel，选择 `New Project`。
-3. 导入这个仓库。
-4. 保持默认设置即可，项目中的 `vercel.json` 已配置：
-   - Build Command：`npm run build`
-   - Output Directory：`dist`
-5. 部署完成后，用 Vercel 提供的网址访问。
+在仓库 Settings → Secrets and variables → Actions 中配置：
 
-### 部署到 Netlify
+| Secret 名称 | 值 | 说明 |
+|---|---|---|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API Token | 需 Account Settings: Read + Cloudflare Pages: Edit 权限 |
+| `CLOUDFLARE_ACCOUNT_ID` | `2d0298af6670ed1db414cd0b646d70c5` | Cloudflare 账户 ID |
 
-1. 把项目上传到 GitHub 仓库。
-2. 打开 Netlify，选择 `Add new site`。
-3. 导入这个仓库。
-4. 保持默认设置即可，项目中的 `netlify.toml` 已配置：
-   - Build Command：`npm run build`
-   - Publish Directory：`dist`
-5. 部署完成后，用 Netlify 提供的网址访问。
+#### 推送代码
 
-### 数据和 API Key
+由于本地网络环境下 `git push` 直连 GitHub 可能超时，项目附带 `push.py` 脚本通过 GitHub API 推送：
 
-当前版本没有账号系统和云同步，不同设备之间的数据不会自动同步。
+```bash
+# 推送已修改的文件
+python push.py "修复了某某问题"
 
-- 学习数据：在旧设备的「设置」里导出 JSON 备份，再到新设备导入。
-- API Key：不会写入备份文件，需要在每台设备的「设置」里单独填写。
-- 安全提醒：部署到公网后，不要把自己的 API Key 填在朋友的设备上；如果要给朋友长期测试，建议后续增加服务端代理或让朋友使用自己的 Key。
+# 推送所有文件（全量同步）
+python push.py "全量同步" --all
+```
 
-## 当前代码结构
+脚本会自动从 git credential 读取认证信息，逐文件通过 API 上传，推送后自动同步本地 git 状态。每次 push 会触发 GitHub Actions 自动构建部署。
 
-- `src/App.tsx`：主界面、状态组合和组件渲染
-- `src/types.ts`：学习节点、模型输出、复习结果等共享类型
-- `src/constants.ts`：角色标签、追问标签、检测状态、初始状态
-- `src/ai.ts`：Prompt 构建、DeepSeek 调用、JSON 解析、结构校验、事实风险检测
-- `src/learning.ts`：路径计算、搜索评分、复习候选判断和排序
-- `src/storage.ts`：localStorage 读写、导入归一化、旧数据兼容、搜索索引重建
-- `src/components/LearningCard.tsx`：学习卡片、事实核验、理解检测、追问推荐
-- `src/components/SearchModal.tsx`：知识找回、标签云、角色筛选、搜索结果
-- `src/components/ReviewModal.tsx`：复习入口、复习筛选、待复习结果
-- `src/components/NodeTree.tsx`：知识树展示和节点递归渲染
-- `src/components/SettingsModal.tsx`：API 设置、导入导出、清空数据、本地偏好摘要
-- `src/styles.css`：视觉样式
+#### 手动触发部署
 
-## 测试清单
+也可以在 GitHub 仓库的 Actions 页面手动触发 workflow（`workflow_dispatch`）。
 
-手工测试场景已整理到 `TESTING.md`，包括最小冒烟测试、事实核验、专业风险、搜索找回、数据安全和异常失败场景。
+### 其他平台
 
-## API Key 配置
+项目同时包含 `netlify.toml` 和 `vercel.json`，可直接导入部署到 Netlify 或 Vercel，无需额外配置。
 
-进入应用右上角或左侧的「设置」，填入 DeepSeek API Key。
+## 数据存储
 
-默认配置：
+所有数据存储在浏览器 localStorage，key 为 `exploratory-learning-v31-state`，无后端、无云同步。
 
-- API 地址：`https://api.deepseek.com/v1/chat/completions`
-- 模型：`deepseek-chat`
+- 学习数据：在「设置」中导出 JSON 备份，可在其他设备导入
+- API Key：不写入备份文件，需在每个设备单独配置
+- 安全提醒：部署到公网后，不要在他人设备上填写自己的 API Key
 
-API Key 只保存在浏览器本地 `localStorage` 中，不会被导出到 JSON 备份。
+## API 配置
 
-## 数据备份
+进入应用「设置」页面，选择 AI 服务商并填入 API Key。支持以下预设：
 
-在「设置」里可以导出 JSON 备份，也可以导入 JSON 恢复数据。
+| 服务商 | API 地址 | 默认模型 |
+|--------|---------|---------|
+| DeepSeek | `https://api.deepseek.com/v1/chat/completions` | `deepseek-chat` |
+| 智谱 AI | `https://open.bigmodel.cn/api/paas/v4/chat/completions` | `glm-4-flash` |
+| 通义千问 | `https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions` | `qwen-turbo` |
+| Groq | `https://api.groq.com/openai/v1/chat/completions` | `llama-3.3-70b-versatile` |
 
-导出备份不包含 API Key。导入备份也不会覆盖当前 API Key、API 地址和模型设置。
+API Key 只保存在浏览器本地，不会被导出到 JSON 备份。配置可通过分享链接（URL Hash 编码）传递给其他设备。
 
-## AI 输出可信边界
+## PWA
 
-本工具是学习辅助工具，不是事实核验系统。遇到以下问题时，应用会显示“需核验”提示：
+应用已配置 Service Worker（版本 v8），支持离线访问已缓存内容：
 
-- 最新事实、价格、排名、政策、法规
-- 医学、法律、金融等专业判断
-- 论文结论、引用、来源、数据
-- 具体人物、事件、版本和时效信息
+- Shell 资源（HTML/manifest/图标）安装时缓存
+- JS/CSS 构建产物走 stale-while-revalidate，带版本检查
+- 导航请求网络优先，失败回退缓存首页
+- API 调用不缓存，离线时返回 503
 
-当前版本没有联网检索能力，不会自动验证引用或实时信息。模型不应编造论文、链接、作者、机构、年份、统计数据或“官方确认”。如果 API 请求失败、超时、模型空返回、内容被截断或结构校验失败，应用不会创建普通学习卡片，避免把失败结果误当成可靠答案。
+## 维护指南
 
-## 当前边界
+### 修改代码后部署
 
-这一版是自用 MVP，不包含：
+1. 本地修改代码
+2. 运行 `npm test` 确认测试通过
+3. 运行 `npm run build` 确认构建通过
+4. 运行 `python push.py "提交说明"` 推送到 GitHub
+5. GitHub Actions 自动构建部署，约 1-2 分钟后线上生效
 
-- 登录
-- 云端同步
-- 分享链接
-- 语义搜索
-- 付费系统
-- 多模型自动路由
+### 新增功能时的注意事项
 
-这些能力建议等自用两周后，再根据真实使用情况决定是否继续做。
+- 新增的纯函数模块放在 `src/` 下，配套写 `*.test.ts`
+- 新增的 React 组件放在 `src/components/`，复杂组件配套写 `*.test.tsx`
+- 新增的业务 hook 放在 `src/hooks/`，在 `useAppState.ts` 中聚合
+- 类型定义统一放 `src/types.ts`
+- Service Worker 版本号在 `public/sw.js` 的 `CACHE_NAME` 和 `CACHE_VERSION` 中维护，发布时需递增
+
+### 配置文件位置
+
+| 配置 | 文件 |
+|------|------|
+| Vite 构建 | `vite.config.ts` |
+| TypeScript | `tsconfig.json` |
+| Cloudflare 部署 | `.github/workflows/deploy.yml` |
+| Netlify 部署 | `netlify.toml` |
+| Vercel 部署 | `vercel.json` |
+| PWA 清单 | `public/manifest.webmanifest` |
+| Service Worker | `public/sw.js` |
