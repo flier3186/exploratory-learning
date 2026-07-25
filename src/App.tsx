@@ -16,7 +16,7 @@ import { QuizModal } from './components/QuizModal'
 import { FeynmanModal } from './components/FeynmanModal'
 import KnowledgeGraphModal from './components/KnowledgeGraphModal'
 import LearningPathModal from './components/LearningPathModal'
-import { decodeConfigFromHash, clearConfigHash } from './utils'
+import { decodeConfigFromHash, clearConfigHash, generateShareLink } from './utils'
 import { profileSummaryForPrompt } from './learning-profile'
 import { isReviewDue } from './spaced-repetition'
 
@@ -106,8 +106,8 @@ export default function App() {
         model: config.m || current.model,
       }))
       clearConfigHash()
-      setNotice('已从分享链接自动导入 API 配置！现在可以直接开始使用了。')
-      setSettingsOpen(true)
+      setNotice('已从分享链接自动导入 API 配置！现在可以直接开始使用了，无需手动设置。')
+      // Don't open settings modal — the user can start using immediately
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -181,6 +181,27 @@ export default function App() {
     askCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     void gen.generateFollowupBatch(node.id, followups)
   }, [app.selectedNode, gen])
+
+  const handleQuickShare = useCallback(() => {
+    if (!app.state.apiKey.trim()) {
+      setNotice('请先在设置中填写 API Key，然后才能分享给朋友。')
+      setSettingsOpen(true)
+      return
+    }
+    const link = generateShareLink(app.state.apiKey, app.state.apiBase, app.state.model)
+    if (!link) {
+      setNotice('生成分享链接失败，请重试。')
+      return
+    }
+    navigator.clipboard.writeText(link).then(
+      () => setNotice('分享链接已复制到剪贴板！发给朋友打开即可直接使用，无需配置 API。'),
+      () => {
+        // Fallback: open settings so user can see the link
+        setSettingsOpen(true)
+        setNotice('复制失败，请在设置中手动复制分享链接。')
+      },
+    )
+  }, [app.state.apiKey, app.state.apiBase, app.state.model, setNotice])
 
   const handleExportData = useCallback(() => {
     const data = app.exportData()
@@ -368,6 +389,7 @@ export default function App() {
               <button className={advancedJustUnlocked ? 'feature-new' : ''} onClick={() => setStatsOpen(true)}>统计</button>
             )}
             <button onClick={() => setSettingsOpen(true)}>设置</button>
+            <button className="share-btn" onClick={handleQuickShare}>分享</button>
           </div>
 
           <div className="template-import-row">
