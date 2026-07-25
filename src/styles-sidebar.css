@@ -434,6 +434,36 @@
   background: rgba(63, 141, 112, 0.12);
 }
 
+.topic-anki-btn {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 4px;
+  color: var(--faint);
+  background: transparent;
+  font-size: 0.7rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: opacity 0.2s ease, background 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.topic:hover .topic-anki-btn,
+.topic-anki-btn:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.topic-anki-btn:hover {
+  color: var(--accent);
+  background: rgba(255, 176, 0, 0.12);
+}
+
 /* 手机端侧边栏切换按钮 */
 .sidebar-toggle {
   display: none;
@@ -567,6 +597,7 @@
 
   /* 移动端触控设备：导出/删除按钮保持可见但非常低调，减少误触 */
   .topic-export-btn,
+  .topic-anki-btn,
   .topic-delete-btn {
     opacity: 0.5;
     pointer-events: auto;
@@ -600,7 +631,8 @@ button,
 .batch-generate-btn,
 .node-delete-btn,
 .topic-delete-btn,
-.topic-export-btn {
+.topic-export-btn,
+.topic-anki-btn {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
