@@ -205,7 +205,17 @@ const LearningPathModalInner = memo(function LearningPathModal({
                         到期: {formatRelativeTime(step.nextReviewAt)}
                       </span>
                     )}
+                    {step.estimatedGain !== undefined && (
+                      <span className="path-step-gain">
+                        收益 +{step.estimatedGain}
+                      </span>
+                    )}
                   </div>
+                  {step.reasonDetail && (
+                    <div className="path-step-reason-detail">
+                      {step.reasonDetail}
+                    </div>
+                  )}
                   <div className="path-step-action">
                     <span className="path-step-hint">
                       {step.category === 'review'
