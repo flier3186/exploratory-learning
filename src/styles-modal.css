@@ -29,12 +29,24 @@
   width: min(820px, 100%);
   max-height: calc(100vh - 40px);
   overflow: auto;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 28px;
   background: rgba(25, 25, 25, 0.96);
   box-shadow: var(--shadow);
   padding: 20px;
   animation: modal-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  /* Override light-theme CSS variables for dark modal background */
+  --text: #f0f0f0;
+  --muted: #b0b8c0;
+  --faint: #888f96;
+  --line: rgba(255, 255, 255, 0.14);
+  --card: rgba(255, 255, 255, 0.08);
+  --card-strong: rgba(255, 255, 255, 0.14);
+  --panel: rgba(255, 255, 255, 0.06);
+  --accent: #ffb020;
+  --accent-2: #4ec9a8;
+  --accent-3: #f0a090;
+  color: #f0f0f0;
 }
 
 .search-modal {
@@ -146,7 +158,7 @@
 .config-import-banner strong {
   display: block;
   margin-bottom: 6px;
-  color: #2f725a;
+  color: #4ec9a8;
 }
 
 .config-import-banner p {
@@ -158,9 +170,9 @@
 .config-import-btn {
   padding: 10px 18px;
   border-radius: 14px;
-  border: 1px solid rgba(63, 141, 112, 0.4);
-  background: rgba(63, 141, 112, 0.12);
-  color: #2f725a;
+  border: 1px solid rgba(78, 201, 168, 0.4);
+  background: rgba(78, 201, 168, 0.12);
+  color: #4ec9a8;
   font-weight: 800;
   font-size: 0.95rem;
   cursor: pointer;
@@ -168,7 +180,7 @@
 }
 
 .config-import-btn:hover {
-  background: rgba(63, 141, 112, 0.22);
+  background: rgba(78, 201, 168, 0.22);
   transform: translateY(-1px);
 }
 
@@ -213,9 +225,9 @@
 .share-link-btn {
   padding: 9px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(184, 117, 26, 0.35);
-  background: rgba(184, 117, 26, 0.08);
-  color: #8a570f;
+  border: 1px solid rgba(255, 176, 0, 0.35);
+  background: rgba(255, 176, 0, 0.1);
+  color: #ffb020;
   font-weight: 700;
   font-size: 0.88rem;
   cursor: pointer;
@@ -224,7 +236,7 @@
 }
 
 .share-link-btn:hover {
-  background: rgba(184, 117, 26, 0.18);
+  background: rgba(255, 176, 0, 0.2);
   transform: translateY(-1px);
 }
 
@@ -1038,7 +1050,7 @@
 .readonly-input {
   width: 100%;
   padding-right: 36px;
-  background: #f3f4f6;
+  background: rgba(255, 255, 255, 0.06);
   cursor: not-allowed;
   color: var(--muted);
   opacity: 0.85;
