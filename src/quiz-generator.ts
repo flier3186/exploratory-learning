@@ -33,20 +33,32 @@ function checksToQuizzes(node: LearningNode): QuizQuestion[] {
 
 // 根据理解检测题的 intent 构造参考答案
 function buildAnswerFromCheck(check: UnderstandingCheck, node: LearningNode): string {
-  const keyPoints = [
-    node.one_line_memory,
-    node.answer.summary,
-  ].filter(Boolean).join('；')
-
   switch (check.intent) {
     case 'recall':
-      return keyPoints || node.answer.plain.slice(0, 150)
+      // 回忆题：用一句话记忆点 + 核心结论作为参考
+      return [
+        node.one_line_memory,
+        node.answer.summary,
+      ].filter(Boolean).join('；') || node.answer.plain.slice(0, 150)
+
     case 'application':
-      return node.answer.example || `根据${node.short_title}的核心机制，先判断适用条件，再选择对应方法。`
+      // 应用题：用关键机制 + 例子作为参考，而不是只给一个例子
+      return [
+        node.answer.mechanism ? `关键机制：${node.answer.mechanism}` : '',
+        node.answer.example ? `参考例子：${node.answer.example}` : '',
+      ].filter(Boolean).join('\n\n') || `根据${node.short_title}的核心机制，先判断适用条件，再选择对应方法。`
+
     case 'boundary':
-      return node.answer.misunderstandings[0] || `注意"${node.short_title}"的适用边界，不要过度推广。`
+      // 边界题：用易错点作为参考
+      return node.answer.misunderstandings.length > 0
+        ? `注意以下易错点：\n${node.answer.misunderstandings.map((m, i) => `${i + 1}. ${m}`).join('\n')}`
+        : `注意"${node.short_title}"的适用边界，不要过度推广。`
+
     default:
-      return keyPoints || node.answer.plain.slice(0, 150)
+      return [
+        node.one_line_memory,
+        node.answer.summary,
+      ].filter(Boolean).join('；') || node.answer.plain.slice(0, 150)
   }
 }
 
