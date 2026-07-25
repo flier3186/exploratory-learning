@@ -1,0 +1,59 @@
+.role-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--muted);
+  padding: 5px 9px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.role-root {
+  background: rgba(255, 176, 0, 0.15) !important;
+  border-color: rgba(255, 176, 0, 0.34) !important;
+  color: #ffd98a !important;
+}
+
+.role-foundation {
+  background: rgba(116, 211, 174, 0.13) !important;
+  border-color: rgba(116, 211, 174, 0.30) !important;
+  color: #a5f2ce !important;
+}
+
+.role-mechanism {
+  background: rgba(141, 169, 255, 0.13) !important;
+  border-color: rgba(141, 169, 255, 0.30) !important;
+  color: #c5d2ff !important;
+}
+
+.role-application {
+  background: rgba(95, 220, 255, 0.12) !important;
+  border-color: rgba(95, 220, 255, 0.30) !important;
+  color: #bdefff !important;
+}
+
+.role-comparison {
+  background: rgba(207, 153, 255, 0.12) !important;
+  border-color: rgba(207, 153, 255, 0.30) !important;
+  color: #e3c6ff !important;
+}
+
+.role-boundary {
+  background: rgba(255, 107, 107, 0.12) !important;
+  border-color: rgba(255, 107, 107, 0.30) !important;
+  color: #ffc4c4 !important;
+}
+
+.role-practice {
+  background: rgba(255, 205, 86, 0.12) !important;
+  border-color: rgba(255, 205, 86, 0.30) !important;
+  color: #ffe5a8 !important;
+}
+
+.role-review {
+  background: rgba(255, 255, 255, 0.10) !important;
+  border-color: rgba(255, 255, 255, 0.24) !important;
+  color: #e8e0d2 !important;
+}

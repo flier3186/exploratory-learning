@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- 圆角方形背景 — 暖奶油纸 -->
+  <rect width="512" height="512" rx="112" fill="#fef9ef" />
+
+  <!-- 装饰小星点 — 暖色调 -->
+  <circle cx="70" cy="80" r="5" fill="#df8a28" opacity="0.2" />
+  <circle cx="450" cy="64" r="4" fill="#df8a28" opacity="0.18" />
+  <circle cx="52" cy="420" r="6" fill="#3f75c2" opacity="0.15" />
+  <circle cx="470" cy="440" r="4.5" fill="#df8a28" opacity="0.18" />
+  <circle cx="110" cy="470" r="3.5" fill="#e8a0a0" opacity="0.2" />
+  <circle cx="410" cy="470" r="3" fill="#e8a0a0" opacity="0.15" />
+
+  <!-- 装饰小叶子 — 暖色 -->
+  <g transform="translate(58, 400) rotate(-30)" opacity="0.18">
+    <path d="M0 0 Q12 -16 0 -32 Q-12 -16 0 0Z" fill="#df8a28" stroke="none" />
+    <line x1="0" y1="0" x2="0" y2="-26" stroke="#302719" stroke-width="1" stroke-linecap="round" />
+  </g>
+  <g transform="translate(456, 110) rotate(20)" opacity="0.18">
+    <path d="M0 0 Q12 -16 0 -32 Q-12 -16 0 0Z" fill="#df8a28" stroke="none" />
+    <line x1="0" y1="0" x2="0" y2="-26" stroke="#302719" stroke-width="1" stroke-linecap="round" />
+  </g>
+  <g transform="translate(470, 390) rotate(-15)" opacity="0.14">
+    <path d="M0 0 Q10 -14 0 -28 Q-10 -14 0 0Z" fill="#df8a28" stroke="none" />
+    <line x1="0" y1="0" x2="0" y2="-22" stroke="#302719" stroke-width="1" stroke-linecap="round" />
+  </g>
+
+  <!-- ===== 小猫头部（放大填满底框） ===== -->
+
+  <!-- 左耳 — 深墨线 + 暖奶油填充 -->
+  <path d="M120 180 Q60 30 180 120" fill="#fef9ef" stroke="#302719" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M130 168 Q92 60 176 118" fill="#f5d5c8" stroke="none" />
+
+  <!-- 右耳 -->
+  <path d="M392 180 Q452 30 332 120" fill="#fef9ef" stroke="#302719" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M382 168 Q420 60 336 118" fill="#f5d5c8" stroke="none" />
+
+  <!-- 猫头轮廓 — 大幅放大 -->
+  <ellipse cx="256" cy="240" rx="185" ry="170" fill="#fef9ef" stroke="#302719" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- 白色面颊区域 -->
+  <ellipse cx="256" cy="278" rx="110" ry="78" fill="#fffdf7" />
+
+  <!-- 左眼 — 眼白 -->
+  <circle cx="186" cy="212" r="38" fill="#fffdf7" stroke="#302719" stroke-width="6" stroke-linecap="round" />
+  <!-- 左眼 - 虹膜 -->
+  <circle cx="186" cy="212" r="26" fill="#5a8fa8" />
+  <!-- 左眼 - 瞳孔（竖椭圆猫瞳） -->
+  <ellipse cx="189" cy="212" rx="7" ry="16" fill="#2c3e50" />
+  <!-- 左眼 - 高光 -->
+  <ellipse cx="195" cy="202" rx="7" ry="10" fill="#fff" opacity="0.9" />
+  <circle cx="178" cy="220" r="4" fill="#fff" opacity="0.6" />
+
+  <!-- 右眼 - 眼白 -->
+  <circle cx="326" cy="212" r="38" fill="#fffdf7" stroke="#302719" stroke-width="6" stroke-linecap="round" />
+  <!-- 右眼 - 虹膜 -->
+  <circle cx="326" cy="212" r="26" fill="#5a8fa8" />
+  <!-- 右眼 - 瞳孔 -->
+  <ellipse cx="329" cy="212" rx="7" ry="16" fill="#2c3e50" />
+  <!-- 右眼 - 高光 -->
+  <ellipse cx="335" cy="202" rx="7" ry="10" fill="#fff" opacity="0.9" />
+  <circle cx="318" cy="220" r="4" fill="#fff" opacity="0.6" />
+
+  <!-- 鼻子（粉色倒三角） — 带墨线描边 -->
+  <path d="M240 270 L256 246 L272 270 Q256 292 240 270Z" fill="#e8a0a0" stroke="#302719" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- 嘴巴 -->
+  <path d="M226 286 Q256 312 286 286" fill="none" stroke="#302719" stroke-width="5" stroke-linecap="round" />
+
+  <!-- 左胡须 -->
+  <line x1="156" y1="272" x2="34" y2="258" stroke="#5a4a3a" stroke-width="3.5" stroke-linecap="round" />
+  <line x1="156" y1="290" x2="34" y2="296" stroke="#5a4a3a" stroke-width="3.5" stroke-linecap="round" />
+  <line x1="156" y1="308" x2="40" y2="326" stroke="#5a4a3a" stroke-width="3.5" stroke-linecap="round" />
+
+  <!-- 右胡须 -->
+  <line x1="356" y1="272" x2="478" y2="258" stroke="#5a4a3a" stroke-width="3.5" stroke-linecap="round" />
+  <line x1="356" y1="290" x2="478" y2="296" stroke="#5a4a3a" stroke-width="3.5" stroke-linecap="round" />
+  <line x1="356" y1="308" x2="472" y2="326" stroke="#5a4a3a" stroke-width="3.5" stroke-linecap="round" />
+
+  <!-- 腮红 -->
+  <ellipse cx="146" cy="270" rx="24" ry="13" fill="#e8a0a0" opacity="0.35" />
+  <ellipse cx="366" cy="270" rx="24" ry="13" fill="#e8a0a0" opacity="0.35" />
+
+  <!-- 底部手绘文字 "探索学习" -->
+  <text x="256" y="430" text-anchor="middle" font-family="serif, 'Noto Serif SC', Georgia, serif" font-size="44" fill="#302719" opacity="0.65" letter-spacing="12" font-weight="700">探索学习</text>
+</svg>

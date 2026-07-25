@@ -1,0 +1,313 @@
+{
+  "_template": true,
+  "_template_meta": {
+    "title": "批判性思维入门",
+    "author": "探索式学习",
+    "description": "从区分事实与观点开始，掌握论证结构识别、认知偏差规避、证据评估和反思维度，建立日常可用的批判性思维框架。",
+    "version": "1.0.0",
+    "node_count": 6,
+    "tags": ["思维", "批判性思维", "逻辑", "认知偏差"]
+  },
+  "topics": [
+    {
+      "id": "topic_critical_thinking",
+      "title": "批判性思维入门",
+      "goal": "建立批判性思维的基础框架，能在日常信息中识别论证结构、发现认知偏差、评估证据质量。",
+      "created_at": 0,
+      "last_accessed_at": 0
+    }
+  ],
+  "nodes": {
+    "ct_root": {
+      "id": "ct_root",
+      "topic_id": "topic_critical_thinking",
+      "parent_id": null,
+      "question": "什么是批判性思维？它和我们常说的杠精有什么区别？",
+      "short_title": "什么是批判性思维",
+      "one_line_memory": "批判性思维是理性评估论证质量的过程，核心是求真而非求赢。",
+      "tags": ["批判性思维", "入门", "思维方法"],
+      "_learning_goal": "区分批判性思维与单纯反驳，建立正确的批判性思维定义。",
+      "question_type": "concept",
+      "learning_role": "root",
+      "answer": {
+        "summary": "批判性思维是一种理性、反思性的思维方式，目的是决定我们相信什么或做什么。它与杠精的根本区别在于：批判性思维追求真相和更好的结论，而杠精追求的是赢得争论。",
+        "plain": "批判性思维不是见什么都反驳，而是对自己的和他人的信念、论证进行系统性审视。它包含三个核心动作：澄清问题、评估证据、推导结论。一个具备批判性思维的人，在遇到不同观点时，第一反应不是这不对，而是这个结论基于什么前提和证据？",
+        "mechanism": "批判性思维的运作依赖于元认知监控——即思考自己的思考。当我们接收信息时，大脑默认进入信念吸收模式，而批判性思维则激活证据评估模式，要求信息经过论证结构检查、证据可靠性检验、逻辑有效性验证三道关卡。",
+        "misunderstandings": ["把批判性思维等同于挑刺和否定一切", "认为批判性思维会让人变得冷漠、不近人情", "觉得批判性思维只在学术场景有用"],
+        "example": "看到一条新闻某研究显示喝咖啡致癌，批判性思维者的反应是：样本量多大？对照组如何设置？是相关性还是因果性？发表在什么期刊？而普通人可能直接转发或完全无视。"
+      },
+      "fact_check": {
+        "explainable": ["批判性思维的定义和核心特征", "批判性思维与论证技巧的区别"],
+        "to_verify": ["特定心理学研究对批判性思维训练效果的量化数据"],
+        "suggested_sources": ["《学会提问》（Asking the Right Questions）", "《思考，快与慢》"],
+        "avoid_conclusions": ["批判性思维训练对所有人群都同样有效"]
+      },
+      "followups": [
+        {
+          "id": "ct_fu_1",
+          "question": "有哪些常见的认知偏差会阻碍我们进行批判性思考？",
+          "type": "mechanism",
+          "reason": "了解障碍才能主动规避，这是建立批判性思维的前提。",
+          "difficulty": 2,
+          "expected_gain": "识别日常生活中最常见的认知偏差。"
+        },
+        {
+          "id": "ct_fu_2",
+          "question": "如何快速判断一个论证的结构是否完整？",
+          "type": "application",
+          "reason": "掌握论证结构分析是批判性思维的核心技能。",
+          "difficulty": 3,
+          "expected_gain": "获得一套快速拆解论证的实用方法。"
+        },
+        {
+          "id": "ct_fu_3",
+          "question": "证据有哪些类型？它们的可靠程度怎么排序？",
+          "type": "foundation",
+          "reason": "评估证据是批判性思维的关键环节。",
+          "difficulty": 2,
+          "expected_gain": "建立证据可靠性的分级认知。"
+        }
+      ],
+      "checks": [
+        {
+          "id": "ct_ck_1",
+          "prompt": "批判性思维的核心目的是什么？",
+          "intent": "recall",
+          "hint": "想想它和赢得争论有什么区别。"
+        },
+        {
+          "id": "ct_ck_2",
+          "prompt": "给出一个你听过的广告或观点，用批判性思维的三个动作审视它。",
+          "intent": "application",
+          "hint": "三个动作是：澄清问题、评估证据、推导结论。"
+        }
+      ],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "ok",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": ["ct_bias", "ct_argument", "ct_evidence"],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "ct_bias": {
+      "id": "ct_bias",
+      "topic_id": "topic_critical_thinking",
+      "parent_id": "ct_root",
+      "question": "有哪些常见的认知偏差会阻碍我们进行批判性思考？",
+      "short_title": "常见认知偏差",
+      "one_line_memory": "确认偏误、锚定效应、可得性启发是最常见的三大认知偏差。",
+      "tags": ["认知偏差", "心理学", "思维"],
+      "question_type": "concept",
+      "learning_role": "mechanism",
+      "answer": {
+        "summary": "最常见的认知偏差包括：确认偏误（只寻找支持自己观点的证据）、锚定效应（过度依赖第一个信息）、可得性启发（把容易想起的事当成更普遍的事）。",
+        "plain": "确认偏误让我们在看新闻时只点和自己立场一致的标题；锚定效应让原价 1000 元打折到 500 元的商品显得便宜，尽管它本来只值 300 元；可得性启发让我们觉得飞机很危险，因为空难新闻印象深刻，尽管统计上飞机比汽车安全得多。",
+        "mechanism": "认知偏差是大脑为节省能量而走的捷径。在进化过程中，快速决策比精确决策更有生存优势，所以大脑发展了大量启发式策略。这些策略在原始环境中有效，但在信息爆炸的现代社会经常失效。",
+        "misunderstandings": ["聪明人不会有认知偏差", "知道了认知偏差就能自动避免", "认知偏差都是坏事，应该完全消除"],
+        "example": "在招聘中，面试官看到第一个候选人表现很好，就可能把后续所有人都和这个人比较（锚定效应），即使岗位需要完全不同的特质。"
+      },
+      "fact_check": {
+        "explainable": ["认知偏差的定义和常见类型", "认知偏差的心理学机制"],
+        "to_verify": ["各类认知偏差在实验中的具体量化数据"],
+        "suggested_sources": ["《思考，快与慢》丹尼尔·卡尼曼", "维基百科 Cognitive bias 条目"],
+        "avoid_conclusions": ["认知偏差可以完全通过训练消除"]
+      },
+      "followups": [
+        {
+          "id": "ctb_fu_1",
+          "question": "如何在日常决策中主动规避确认偏误？",
+          "type": "application",
+          "reason": "从知道到做到，需要具体的操作方法。",
+          "difficulty": 3,
+          "expected_gain": "获得可落地的确认偏误规避策略。"
+        },
+        {
+          "id": "ctb_fu_2",
+          "question": "群体决策中会出现哪些特有的认知偏差？",
+          "type": "connection",
+          "reason": "理解群体层面的偏差对工作和学习都很重要。",
+          "difficulty": 3,
+          "expected_gain": "识别群体思维、信息瀑布等现象。"
+        }
+      ],
+      "checks": [
+        {
+          "id": "ctb_ck_1",
+          "prompt": "列举三种最常见的认知偏差，并各给一个生活中的例子。",
+          "intent": "recall",
+          "hint": "确认偏误、锚定效应、可得性启发。"
+        }
+      ],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "ok",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": [],
+        "related_node_ids": [],
+        "prerequisite_node_ids": ["ct_root"]
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "ct_argument": {
+      "id": "ct_argument",
+      "topic_id": "topic_critical_thinking",
+      "parent_id": "ct_root",
+      "question": "如何快速判断一个论证的结构是否完整？",
+      "short_title": "论证结构分析",
+      "one_line_memory": "完整论证 = 前提 + 推理规则 + 结论，缺少任何一个都无法成立。",
+      "tags": ["逻辑", "论证", "思维"],
+      "question_type": "application",
+      "learning_role": "mechanism",
+      "answer": {
+        "summary": "一个完整的论证包含三个必要部分：前提（支持结论的理由）、推理规则（从前提到结论的推导方式）、结论（要证明的观点）。快速判断的方法是：先找结论，再找前提，最后检查从前提到结论的推理是否有效。",
+        "plain": "看到任何观点，先问自己：这个人想让我相信什么？（结论）他给了什么理由？（前提）这些理由真的能推出这个结论吗？（推理）比如有人说因为专家都这么说，所以这个政策是对的，前提专家都这么说和结论政策是对的之间缺少推理：专家意见在什么情况下可靠？这个领域的专家共识程度如何？",
+        "mechanism": "论证的有效性取决于逻辑形式，而非内容真假。一个论证可以有假前提但推理有效，也可以有真前提但推理无效（谬误）。批判性思维要求分别评估前提的真实性和推理的有效性。",
+        "misunderstandings": ["前提为真就能保证结论为真", "听起来有道理就是逻辑有效", "论证分析只适合学术论文"],
+        "example": "广告说：90% 的医生推荐 XX 牙膏，结论是你应该买 XX 牙膏。但前提中缺少：这些医生是否被付费推荐？样本量多大？推荐具体指什么？推理中假设了医生推荐 = 适合我，这个假设不一定成立。"
+      },
+      "fact_check": {
+        "explainable": ["论证的基本结构", "逻辑有效性与前提真实性的区别"],
+        "to_verify": [],
+        "suggested_sources": ["《逻辑学导论》", "《学会提问》"],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "id": "cta_fu_1",
+          "question": "常见的逻辑谬误有哪些？怎么快速识别？",
+          "type": "boundary",
+          "reason": "识别谬误是论证分析的进阶技能。",
+          "difficulty": 3,
+          "expected_gain": "掌握最常见的十余种逻辑谬误及其识别特征。"
+        }
+      ],
+      "checks": [
+        {
+          "id": "cta_ck_1",
+          "prompt": "用找结论-找前提-验推理三步法，分析一个你最近看到的观点。",
+          "intent": "application",
+          "hint": "可以是社交媒体、新闻或广告中的观点。"
+        }
+      ],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "ok",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": [],
+        "related_node_ids": [],
+        "prerequisite_node_ids": ["ct_root"]
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "ct_evidence": {
+      "id": "ct_evidence",
+      "topic_id": "topic_critical_thinking",
+      "parent_id": "ct_root",
+      "question": "证据有哪些类型？它们的可靠程度怎么排序？",
+      "short_title": "证据类型与评估",
+      "one_line_memory": "证据可靠性大致排序：系统综述 > 随机对照实验 > 观察性研究 > 专家意见 > 个人经验 > 传闻。",
+      "tags": ["证据", "研究方法", "思维"],
+      "question_type": "concept",
+      "learning_role": "foundation",
+      "answer": {
+        "summary": "证据按可靠性从低到高大致可分为：传闻/个人经验 < 专家意见 < 观察性研究 < 随机对照实验 < 系统综述/元分析。但可靠性不是唯一标准，还要考虑证据与具体问题的相关性。",
+        "plain": "个人经验虽然真实，但样本量极小且充满选择性记忆；专家意见有价值，但受领域局限和利益影响；观察性研究能发现关联，但难以确定因果；随机对照实验（RCT）通过控制变量更接近因果，但成本高且未必能推广；系统综述综合多项研究，可靠性最高，但也受纳入研究质量影响。",
+        "mechanism": "证据评估的核心是证据等级体系（Hierarchy of Evidence），它基于研究设计的内在严谨性排序。但证据的适用性还要考虑：是否直接回答当前问题？研究人群是否与我关心的人群一致？效应量有多大？置信区间如何？",
+        "misunderstandings": ["RCT 的结果一定比观察性研究更对", "专家意见永远不可靠", "个人经验完全没有价值"],
+        "example": "有人说我爷爷抽烟活到 90 岁，所以抽烟无害，这是个人经验（轶事证据），可靠性最低。而世界卫生组织基于数万样本的流行病学研究才是高质量证据。"
+      },
+      "fact_check": {
+        "explainable": ["证据等级体系的基本概念", "不同研究设计的优缺点"],
+        "to_verify": ["特定领域证据等级的具体排序差异"],
+        "suggested_sources": ["牛津循证医学中心证据等级", "Cochrane 图书馆"],
+        "avoid_conclusions": ["证据等级在所有领域都完全一致"]
+      },
+      "followups": [
+        {
+          "id": "cte_fu_1",
+          "question": "如何在信息过载的环境中快速筛选高质量信息源？",
+          "type": "application",
+          "reason": "这是日常最需要的信息素养技能。",
+          "difficulty": 3,
+          "expected_gain": "获得信息源快速评估的实用清单。"
+        }
+      ],
+      "checks": [
+        {
+          "id": "cte_ck_1",
+          "prompt": "列举三种你最近接触到的信息，判断它们分别属于哪类证据。",
+          "intent": "application",
+          "hint": "可以是朋友圈分享、新闻报道、论文或播客。"
+        }
+      ],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "ok",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": [],
+        "related_node_ids": [],
+        "prerequisite_node_ids": ["ct_root"]
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    }
+  }
+}

@@ -1,0 +1,91 @@
+:root {
+  color-scheme: light;
+  --bg: #f0f4f8;
+  --panel: #f7f9fc;
+  --panel-2: #e8edf3;
+  --card: rgba(90, 120, 150, 0.06);
+  --card-strong: rgba(90, 120, 150, 0.12);
+  --text: #2c3e50;
+  --muted: #6b8299;
+  --faint: #94a7b8;
+  --line: rgba(90, 120, 150, 0.18);
+  --accent: #5b8fb9;
+  --accent-2: #3f8d70;
+  --accent-3: #e8927c;
+  --danger: #c0564f;
+  --shadow: 0 24px 70px rgba(90, 120, 150, 0.13);
+  font-family: "LXGW WenKai", "霞鹜文楷", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(91, 143, 185, 0.10), transparent 24rem),
+    radial-gradient(circle at 92% 16%, rgba(63, 141, 112, 0.08), transparent 24rem),
+    linear-gradient(135deg, #edf1f5 0%, #f5f7fa 48%, #e4eaf0 100%);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+input,
+textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  outline: none;
+  color: var(--text);
+  background: rgba(247, 249, 252, 0.82);
+  border-radius: 14px;
+  padding: 12px 13px;
+}
+
+input:focus,
+textarea:focus {
+  border-color: rgba(91, 143, 185, 0.58);
+  box-shadow: 0 0 0 4px rgba(91, 143, 185, 0.10);
+}
+
+.hidden {
+  display: none;
+}
+
+.ghost {
+  background: transparent !important;
+  color: var(--muted) !important;
+}
+
+@keyframes turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes cat-question-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes cat-idle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}

@@ -1,0 +1,330 @@
+.followup-panel {
+  margin-top: 18px;
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+
+.section-title h3 {
+  margin: 0 0 8px;
+}
+
+.section-title p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.followup-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(180px, 1fr));
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.followup-batch-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  border: 1px solid rgba(63, 141, 112, 0.24);
+  border-radius: 18px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  background: rgba(63, 141, 112, 0.08);
+  color: #2f725a;
+}
+
+.followup-batch-bar span {
+  font-weight: 800;
+}
+
+.followup-batch-bar button {
+  border-radius: 999px;
+  border: 1px solid rgba(63, 141, 112, 0.28);
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.56);
+  color: var(--text);
+}
+
+.followup-card {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.56);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.followup-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.followup-card.selected {
+  border-color: rgba(63, 141, 112, 0.5);
+  background: rgba(63, 141, 112, 0.10);
+  box-shadow: inset 0 0 0 2px rgba(63, 141, 112, 0.22);
+}
+
+.followup-card.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.followup-card.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.followup-card.dismissed {
+  opacity: 0.35;
+  filter: grayscale(0.6);
+  transform: scale(0.97);
+  transition: all 0.2s ease;
+}
+
+.followup-card.liked {
+  border-color: rgba(116, 211, 174, 0.4);
+  box-shadow: 0 0 0 1px rgba(116, 211, 174, 0.2);
+}
+
+.followup-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  border: 2px solid var(--line);
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
+  font-weight: 800;
+  color: transparent;
+  transition: all 0.18s ease;
+  margin-left: auto;
+}
+
+.followup-check.checked {
+  border-color: #3f8d70;
+  background: #3f8d70;
+  color: #fff;
+}
+
+.followup-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+.followup-top span:not(.followup-check) {
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 0.86rem;
+}
+
+.followup-top small {
+  color: var(--faint);
+}
+
+.followup-card h4 {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.35;
+}
+
+.followup-card > small {
+  color: var(--faint);
+  margin-top: auto;
+}
+
+.followup-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.followup-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.followup-actions button {
+  border-radius: 999px;
+  padding: 7px 9px;
+  font-size: 0.82rem;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--line);
+  transition: 0.18s ease;
+}
+
+.followup-actions button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 176, 0, 0.45);
+  background: rgba(255, 176, 0, 0.13);
+}
+
+.followup-actions button:first-child {
+  color: var(--text);
+  background: rgba(255, 176, 0, 0.12);
+  border-color: rgba(255, 176, 0, 0.35);
+  font-weight: 700;
+}
+
+.followup-actions button:first-child:hover {
+  background: rgba(255, 176, 0, 0.22);
+  border-color: rgba(255, 176, 0, 0.5);
+}
+
+.followup-actions button.active {
+  color: #fff8eb;
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 800;
+}
+
+.followup-batch-bar .batch-generate-btn {
+  color: #fff;
+  background: #3f8d70;
+  border-color: #3f8d70;
+  font-weight: 800;
+  padding: 9px 16px;
+}
+
+.followup-batch-bar .batch-generate-btn:hover {
+  background: #357a5f;
+  border-color: #357a5f;
+}
+
+.followup-batch-bar .batch-generate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.learning-goal-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 0.83rem;
+  color: var(--accent-3);
+  background: rgba(79, 105, 182, 0.08);
+  border: 1px solid rgba(79, 105, 182, 0.18);
+  max-width: 100%;
+}
+
+.learning-goal-chip .goal-icon {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.learning-goal-chip span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.path-tag {
+  font-size: 0.72rem !important;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.followup-card.path-depth .path-tag {
+  color: #4f69b6;
+  background: rgba(79, 105, 182, 0.10);
+}
+
+.followup-card.path-compare .path-tag {
+  color: #8b5cb6;
+  background: rgba(139, 92, 182, 0.10);
+}
+
+.followup-card.path-boundary .path-tag {
+  color: #b84040;
+  background: rgba(184, 64, 64, 0.10);
+}
+
+.followup-card.path-action .path-tag {
+  color: #3f8d70;
+  background: rgba(63, 141, 112, 0.10);
+}
+
+.followup-card.path-depth {
+  border-left: 3px solid rgba(79, 105, 182, 0.35);
+}
+
+.followup-card.path-compare {
+  border-left: 3px solid rgba(139, 92, 182, 0.35);
+}
+
+.followup-card.path-boundary {
+  border-left: 3px solid rgba(184, 64, 64, 0.35);
+}
+
+.followup-card.path-action {
+  border-left: 3px solid rgba(63, 141, 112, 0.35);
+}
+
+.direction-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.direction-row button {
+  border-radius: 999px;
+  padding: 9px 13px;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--line);
+  transition: 0.18s ease;
+}
+
+.direction-row button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 176, 0, 0.45);
+  background: rgba(255, 176, 0, 0.13);
+}
+
+@media (max-width: 1100px) {
+  .followup-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .followup-grid {
+    grid-template-columns: 1fr;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 12px;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 8px;
+  }
+
+  .followup-card {
+    min-width: 82vw;
+    max-width: 82vw;
+    scroll-snap-align: start;
+    min-height: 240px;
+  }
+}

@@ -1,0 +1,153 @@
+.check-panel {
+  margin: 18px 0;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 18px;
+  background: rgba(255, 252, 246, 0.62);
+}
+
+/* Collapsible wrapper for check panel */
+.check-panel-wrapper {
+  margin: 18px 0;
+}
+
+.check-panel-summary {
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 1.05rem;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: rgba(255, 252, 246, 0.62);
+  transition: 0.18s ease;
+  user-select: none;
+}
+
+.check-panel-summary::-webkit-details-marker {
+  display: none;
+}
+
+.check-panel-summary::before {
+  content: '▸';
+  display: inline-block;
+  transition: transform 0.2s ease;
+  color: var(--faint);
+}
+
+.check-panel-wrapper[open] .check-panel-summary::before {
+  transform: rotate(90deg);
+}
+
+.check-panel-wrapper[open] .check-panel-summary {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-bottom: 0;
+}
+
+.check-panel-wrapper[open] .check-panel {
+  margin-top: 0;
+  border-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.check-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.check-card {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.check-card span {
+  color: var(--accent-2);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.check-card h4 {
+  margin: 8px 0;
+  line-height: 1.38;
+}
+
+.check-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.check-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.check-actions button {
+  border-radius: 999px;
+  padding: 9px 13px;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--line);
+  transition: 0.18s ease;
+}
+
+.check-actions button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 176, 0, 0.45);
+  background: rgba(255, 176, 0, 0.13);
+}
+
+.check-actions button.active {
+  color: #fff8eb;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.check-status {
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  padding: 5px 10px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.055);
+  font-size: 0.8rem;
+}
+
+.check-status.understood {
+  border-color: rgba(63, 141, 112, 0.35);
+  color: #2f725a;
+  background: rgba(63, 141, 112, 0.1);
+}
+
+.check-status.uncertain {
+  border-color: rgba(184, 117, 26, 0.35);
+  color: #8a570f;
+  background: rgba(184, 117, 26, 0.1);
+}
+
+.check-status.needs_review {
+  border-color: rgba(184, 64, 64, 0.35);
+  color: #9d3333;
+  background: rgba(184, 64, 64, 0.1);
+}
+
+.mastery-row button.active {
+  color: #fff8eb;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+@media (max-width: 760px) {
+  .check-grid {
+    grid-template-columns: 1fr;
+  }
+}

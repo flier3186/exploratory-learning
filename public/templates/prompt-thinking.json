@@ -1,0 +1,1462 @@
+{
+  "_template": true,
+  "_template_meta": {
+    "title": "AI 提示词思维",
+    "author": "探索式学习",
+    "description": "从零开始理解 AI 提示词工程的核心思维，涵盖 AI 原理、提示词技巧、幻觉问题、上下文管理、CoT、角色设定等专家路径。",
+    "version": "1.0.0",
+    "node_count": 20,
+    "tags": ["AI", "提示词", "提示工程", "AI思维"]
+  },
+  "topics": [
+    {
+      "id": "topic_prompt_thinking",
+      "title": "AI 提示词思维",
+      "goal": "建立对 AI 提示词工程的系统理解，从 AI 原理出发，掌握提示词设计、评估与优化的专家思维。",
+      "created_at": 0,
+      "last_accessed_at": 0
+    }
+  ],
+  "nodes": {
+    "aimo_root": {
+      "id": "aimo_root",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": null,
+      "question": "什么是好的提示词？为什么同样的 AI，有人用得好有人用不好？",
+      "short_title": "什么是好提示词",
+      "one_line_memory": "好提示词 = 清晰意图 + 足够上下文 + 合理约束，核心在于对齐人类思维与 AI 逻辑。",
+      "tags": ["提示词", "AI思维", "入门"],
+      "_learning_goal": "理解好提示词的核心要素，建立对 AI 提示词工程的整体认知框架。",
+      "question_type": "concept",
+      "learning_role": "root",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "AI 的'理解'和人的'理解'有什么根本区别？",
+          "type": "foundation",
+          "reason": "理解 AI 的认知本质是写好提示词的第一步。",
+          "difficulty": 2,
+          "expected_gain": "建立对 AI 认知机制的基础认知。"
+        },
+        {
+          "question": "一个新手和一个高手写提示词，差距到底在哪里？",
+          "type": "comparison",
+          "reason": "通过对比新手与高手的差异，快速锚定提升方向。",
+          "difficulty": 2,
+          "expected_gain": "明确从新手到高手的成长路径。"
+        },
+        {
+          "question": "好的提示词和坏提示词，看哪些指标就能区分？",
+          "type": "application",
+          "reason": "掌握评估标准后才能持续优化自己的提示词。",
+          "difficulty": 3,
+          "expected_gain": "获得一套可操作的提示词评估框架。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": ["aimo_02", "aimo_03", "aimo_04"],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "aimo_02": {
+      "id": "aimo_02",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": "aimo_root",
+      "question": "AI 的'理解'和人的'理解'有什么根本区别？",
+      "short_title": "AI理解vs人类理解",
+      "one_line_memory": "AI 靠统计模式匹配'理解'语言，没有真实语义理解，这是幻觉和局限性的根源。",
+      "tags": ["AI原理", "认知差异"],
+      "_learning_goal": "理解 AI 统计模式匹配的本质，认清 AI '理解'与人类理解的根本差异。",
+      "question_type": "concept",
+      "learning_role": "foundation",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "为什么 AI 会'一本正经地胡说八道'（幻觉）？",
+          "type": "mechanism",
+          "reason": "幻觉是 AI 理解差异最典型的表现，理解其机制才能有效应对。",
+          "difficulty": 3,
+          "expected_gain": "深入理解幻觉产生的技术原理。"
+        },
+        {
+          "question": "AI 的上下文窗口是什么？为什么超过它就会'忘事'？",
+          "type": "mechanism",
+          "reason": "上下文窗口是 AI 记忆的硬限制，直接影响提示词设计策略。",
+          "difficulty": 3,
+          "expected_gain": "理解 AI 记忆的物理约束与应对方法。"
+        },
+        {
+          "question": "如果 AI 只做统计模式匹配，为什么它有时能表现出类似'推理'的行为？",
+          "type": "practice",
+          "reason": "这个矛盾能帮助深入理解统计模式匹配的能力边界与涌现现象。",
+          "difficulty": 3,
+          "expected_gain": "理解'涌现能力'与统计匹配之间的关系。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": ["aimo_05", "aimo_06"],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "aimo_03": {
+      "id": "aimo_03",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": "aimo_root",
+      "question": "新手和高手写提示词的差距到底在哪里？",
+      "short_title": "新手vs高手提示词",
+      "one_line_memory": "高手的核心优势在于：明确意图、拆解任务、提供上下文、预判失败模式。",
+      "tags": ["对比", "进阶"],
+      "_learning_goal": "明确新手与高手在提示词设计上的核心差异，找到自己的提升方向。",
+      "question_type": "comparison",
+      "learning_role": "comparison",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "高手写提示词时脑子里在想什么？",
+          "type": "foundation",
+          "reason": "拆解高手的思维模型，是最有效的进阶路径。",
+          "difficulty": 3,
+          "expected_gain": "获得可复制的高手思维框架。"
+        },
+        {
+          "question": "提示词的质量上限由什么决定？是技巧还是问题本身？",
+          "type": "boundary",
+          "reason": "认清提示词的边界，避免在错误方向上过度优化。",
+          "difficulty": 4,
+          "expected_gain": "建立对提示词能力天花板的正确预期。"
+        },
+        {
+          "question": "拿一个你常用的提示词，试着用高手思维重写一版",
+          "type": "practice",
+          "reason": "实践是检验理解的最佳方式，通过重写体验高手思维的具体应用。",
+          "difficulty": 2,
+          "expected_gain": "通过实操体会高手思维的具体应用方式。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": ["aimo_07", "aimo_08"],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "aimo_04": {
+      "id": "aimo_04",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": "aimo_root",
+      "question": "好的提示词和坏提示词怎么区分？",
+      "short_title": "好提示词vs坏提示词",
+      "one_line_memory": "好提示词有清晰意图、充分上下文和明确输出格式；坏提示词模糊、信息不足、缺乏约束。",
+      "tags": ["评估", "实践"],
+      "_learning_goal": "掌握评估提示词好坏的核心标准，能够快速识别并改进低质量提示词。",
+      "question_type": "application",
+      "learning_role": "application",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "给我几个同一主题的好/坏提示词对比",
+          "type": "example",
+          "reason": "通过具体案例直观感受好坏差异，是最快的学习方式。",
+          "difficulty": 2,
+          "expected_gain": "建立好坏提示词的直观判断力。"
+        },
+        {
+          "question": "有没有'万能提示词公式'？",
+          "type": "boundary",
+          "reason": "公式的存在性及局限性是初学者最关心的问题。",
+          "difficulty": 3,
+          "expected_gain": "了解提示词框架的价值与陷阱。"
+        },
+        {
+          "question": "评价提示词好坏，最核心的三个维度是什么？",
+          "type": "foundation",
+          "reason": "建立评估维度是系统化改进提示词的前提基础。",
+          "difficulty": 2,
+          "expected_gain": "获得一套清晰的提示词评估维度体系。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": ["aimo_09", "aimo_10"],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "aimo_05": {
+      "id": "aimo_05",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": "aimo_02",
+      "question": "为什么 AI 会产生幻觉？",
+      "short_title": "AI幻觉的成因",
+      "one_line_memory": "幻觉源于 AI 的统计生成本质——它预测下一个词而非检索事实，高置信度输出不一定正确。",
+      "tags": ["幻觉", "AI原理"],
+      "_learning_goal": "理解 AI 幻觉产生的根本原因，建立对 AI 输出可靠性问题的基本认知。",
+      "question_type": "mechanism",
+      "learning_role": "mechanism",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "怎么让 AI 在不确定的时候主动说'我不知道'？",
+          "type": "application",
+          "reason": "学会通过提示词降低幻觉风险是高频实用技能。",
+          "difficulty": 3,
+          "expected_gain": "掌握抑制幻觉的提示词技巧。"
+        },
+        {
+          "question": "幻觉问题能完全解决吗？",
+          "type": "boundary",
+          "reason": "认清幻觉的理论极限，建立合理的预期。",
+          "difficulty": 3,
+          "expected_gain": "理解幻觉问题的长期边界。"
+        },
+        {
+          "question": "幻觉和'错误'有什么本质区别？",
+          "type": "foundation",
+          "reason": "区分幻觉与普通错误有助于精准诊断 AI 输出问题的类型。",
+          "difficulty": 2,
+          "expected_gain": "建立对幻觉与错误的概念区分能力。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": ["aimo_11", "aimo_12"],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "aimo_06": {
+      "id": "aimo_06",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": "aimo_02",
+      "question": "什么是上下文窗口？",
+      "short_title": "上下文窗口",
+      "one_line_memory": "上下文窗口是 AI 单次对话能处理的文本量上限，超出部分会被截断或遗忘。",
+      "tags": ["上下文", "技术概念"],
+      "_learning_goal": "理解上下文窗口的概念及其对 AI 对话的限制，掌握基本的上下文管理意识。",
+      "question_type": "concept",
+      "learning_role": "mechanism",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "上下文窗口不够用时怎么办？",
+          "type": "application",
+          "reason": "窗口不足是实际使用中的高频痛点，需要实用解决方案。",
+          "difficulty": 3,
+          "expected_gain": "掌握多种突破上下文限制的策略。"
+        },
+        {
+          "question": "温度参数和上下文窗口有什么关系？",
+          "type": "connection",
+          "reason": "温度是另一个核心参数，连接它能形成更完整的认知。",
+          "difficulty": 3,
+          "expected_gain": "建立参数间的关联理解。"
+        },
+        {
+          "question": "上下文窗口大小会直接影响提示词设计吗？",
+          "type": "boundary",
+          "reason": "理解窗口限制如何约束提示词的策略选择，是设计高效提示词的关键。",
+          "difficulty": 3,
+          "expected_gain": "认识上下文限制对提示词设计策略的具体影响。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": ["aimo_13", "aimo_14"],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "aimo_07": {
+      "id": "aimo_07",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": "aimo_03",
+      "question": "高手写提示词时脑子里在想什么？",
+      "short_title": "高手的思维模型",
+      "one_line_memory": "高手的核心思维：拆解问题、预判 AI 失败点、分层提供信息、设计验证步骤。",
+      "tags": ["思维模型", "进阶"],
+      "_learning_goal": "拆解高手写提示词时的核心思维过程，获得可复用的思维框架。",
+      "question_type": "mechanism",
+      "learning_role": "foundation",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "什么是'分步思考'（Chain-of-Thought）？为什么它这么有效？",
+          "type": "mechanism",
+          "reason": "CoT 是提示词领域最核心的技术之一，高手必用。",
+          "difficulty": 3,
+          "expected_gain": "掌握 CoT 的原理与使用场景。"
+        },
+        {
+          "question": "给 AI 设定角色为什么有效？背后的原理是什么？",
+          "type": "mechanism",
+          "reason": "角色设定是最常用的提示词技巧之一，理解其原理才能用得好。",
+          "difficulty": 3,
+          "expected_gain": "理解角色提示的底层机制与最佳实践。"
+        },
+        {
+          "question": "高手的提示词思维和程序员的结构化思维有什么异同？",
+          "type": "comparison",
+          "reason": "跨领域对比能帮助理解高手思维的独特性与可迁移性。",
+          "difficulty": 3,
+          "expected_gain": "从结构化思维视角理解提示词设计的方法论。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": ["aimo_15", "aimo_16"],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "aimo_08": {
+      "id": "aimo_08",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": "aimo_03",
+      "question": "提示词质量上限由什么决定？",
+      "short_title": "提示词的能力边界",
+      "one_line_memory": "提示词的上限受 AI 模型能力、任务可表达性和领域知识三方约束，技巧只是杠杆。",
+      "tags": ["局限性", "认知"],
+      "_learning_goal": "认清提示词的能力天花板，理解什么能改什么不能改，避免无效优化。",
+      "question_type": "boundary",
+      "learning_role": "boundary",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "什么时候应该优化提示词，什么时候该换工具？",
+          "type": "application",
+          "reason": "做出正确判断能避免大量无效努力。",
+          "difficulty": 3,
+          "expected_gain": "获得工具选择与提示词优化的决策框架。"
+        },
+        {
+          "question": "提示词能解决'AI 不懂'的问题吗？",
+          "type": "boundary",
+          "reason": "认清提示词不能突破的硬边界。",
+          "difficulty": 4,
+          "expected_gain": "理解提示词万能论的误区。"
+        },
+        {
+          "question": "AI 不擅长什么类型的任务？这对提示词设计意味着什么？",
+          "type": "foundation",
+          "reason": "了解 AI 的能力短板是合理设定期望和选择策略的基础。",
+          "difficulty": 2,
+          "expected_gain": "建立对 AI 能力短板的系统认知，指导提示词设计策略。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": ["aimo_17"],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "aimo_09": {
+      "id": "aimo_09",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": "aimo_04",
+      "question": "好/坏提示词的实际对比",
+      "short_title": "好与坏提示词对比",
+      "one_line_memory": "好提示词 = 清晰意图 + 结构化信息 + 输出约束；坏提示词 = 模糊指令 + 信息缺失 + 无格式要求。",
+      "tags": ["案例", "实践"],
+      "_learning_goal": "通过正反对比案例，培养快速识别和改进提示词问题的实操能力。",
+      "question_type": "example",
+      "learning_role": "practice",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "从坏提示词到好提示词，修改的核心思路是什么？",
+          "type": "mechanism",
+          "reason": "掌握修改方法论后可以举一反三优化任何提示词。",
+          "difficulty": 3,
+          "expected_gain": "获得一套可复用的提示词优化方法论。"
+        },
+        {
+          "question": "有没有'看起来好但其实不好'的提示词？",
+          "type": "boundary",
+          "reason": "识别'伪好提示词'是进阶能力，避免被表面功夫迷惑。",
+          "difficulty": 3,
+          "expected_gain": "培养对提示词质量的深度判断力，识别常见陷阱。"
+        },
+        {
+          "question": "试着写一个你认为的坏提示词，分析它具体坏在哪里",
+          "type": "practice",
+          "reason": "通过主动构造坏案例反向理解好提示词的设计要素。",
+          "difficulty": 2,
+          "expected_gain": "从反面案例中加深对提示词设计原则的理解。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": [],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "aimo_10": {
+      "id": "aimo_10",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": "aimo_04",
+      "question": "有没有万能提示词公式？",
+      "short_title": "万能提示词公式",
+      "one_line_memory": "没有万能公式，但有实用框架（如 CRISPE/CREATE），关键在理解原理而非死记模板。",
+      "tags": ["万能公式", "误区"],
+      "_learning_goal": "了解提示词框架的价值与局限，避免陷入模板依赖的思维陷阱。",
+      "question_type": "boundary",
+      "learning_role": "boundary",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "常用的提示词框架有哪些？各适合什么场景？",
+          "type": "comparison",
+          "reason": "了解主流框架才能根据场景灵活选用。",
+          "difficulty": 3,
+          "expected_gain": "掌握主流提示词框架的适用场景。"
+        },
+        {
+          "question": "过度依赖公式会有什么问题？",
+          "type": "boundary",
+          "reason": "避免陷入'模板依赖'的思维陷阱。",
+          "difficulty": 3,
+          "expected_gain": "理解框架的局限性，培养灵活运用能力。"
+        },
+        {
+          "question": "用你觉得最有效的提示词框架，写一个实际可用的提示词",
+          "type": "practice",
+          "reason": "将框架知识转化为实际动手能力，检验对框架原理的掌握程度。",
+          "difficulty": 3,
+          "expected_gain": "获得使用提示词框架的实操经验与信心。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": ["aimo_18"],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "aimo_11": {
+      "id": "aimo_11",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": "aimo_05",
+      "question": "怎么让 AI 主动说'我不知道'？",
+      "short_title": "抑制幻觉的提示词",
+      "one_line_memory": "通过明确告知 AI 可以拒绝回答、要求引用来源、降低置信度，可以有效抑制幻觉。",
+      "tags": ["幻觉应对", "实践"],
+      "_learning_goal": "掌握通过提示词策略抑制 AI 幻觉的具体技巧，提高 AI 输出的可靠性。",
+      "question_type": "application",
+      "learning_role": "application",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "除了提示词，还有什么方法可以减少幻觉？",
+          "type": "connection",
+          "reason": "幻觉治理是多维度的，提示词只是其中一环。",
+          "difficulty": 4,
+          "expected_gain": "建立幻觉治理的全景视角。"
+        },
+        {
+          "question": "让 AI 说'我不知道'的具体提示词技巧有哪些？",
+          "type": "mechanism",
+          "reason": "从技术机制层面理解不同抑制幻觉策略的原理差异。",
+          "difficulty": 3,
+          "expected_gain": "掌握多种具体的幻觉抑制提示词技巧及其原理。"
+        },
+        {
+          "question": "不同模型（DeepSeek/GPT/Claude）的幻觉倾向一样吗？",
+          "type": "comparison",
+          "reason": "不同模型的幻觉特性有差异，了解差异有助于针对性设计策略。",
+          "difficulty": 3,
+          "expected_gain": "建立跨模型的幻觉特征认知，选择更适合的模型。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": [],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "aimo_12": {
+      "id": "aimo_12",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": "aimo_05",
+      "question": "幻觉能完全解决吗？",
+      "short_title": "幻觉的理论极限",
+      "one_line_memory": "幻觉是大语言模型的固有特性，无法完全消除，但可以通过多种手段显著降低。",
+      "tags": ["幻觉", "局限性"],
+      "_learning_goal": "理解幻觉作为大语言模型固有特性的理论根源，建立合理的长期预期。",
+      "question_type": "boundary",
+      "learning_role": "boundary",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "面对 AI 的回答，普通人应该怎么判断可信度？",
+          "type": "application",
+          "reason": "既然幻觉无法消除，批判性验证就成为必备技能。",
+          "difficulty": 3,
+          "expected_gain": "获得实用的 AI 回答可信度判断方法。"
+        },
+        {
+          "question": "RAG 和检索增强能多大程度解决幻觉？",
+          "type": "boundary",
+          "reason": "RAG 是当前最主流的幻觉缓解方案，了解其实际效果与局限。",
+          "difficulty": 4,
+          "expected_gain": "客观评估 RAG 在幻觉治理中的真实贡献与不足。"
+        },
+        {
+          "question": "幻觉问题和 AI 安全有什么关系？",
+          "type": "connection",
+          "reason": "幻觉不仅是质量问题，更涉及 AI 安全与责任边界。",
+          "difficulty": 4,
+          "expected_gain": "从安全视角重新理解幻觉问题的重要性与治理意义。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": ["aimo_20"],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "aimo_13": {
+      "id": "aimo_13",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": "aimo_06",
+      "question": "上下文不够用时怎么办？",
+      "short_title": "突破上下文限制",
+      "one_line_memory": "关键策略：摘要压缩、分段处理、外部检索（RAG）、多轮对话管理。",
+      "tags": ["上下文", "技巧"],
+      "_learning_goal": "掌握突破上下文窗口限制的多种实用策略，能够处理超长文本任务。",
+      "question_type": "application",
+      "learning_role": "application",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "什么是 RAG？它和提示词工程是什么关系？",
+          "type": "connection",
+          "reason": "RAG 是突破上下文限制的主流方案，与提示词工程密切相关。",
+          "difficulty": 4,
+          "expected_gain": "理解 RAG 的原理及其与提示词的协同关系。"
+        },
+        {
+          "question": "分段处理和摘要压缩，哪种策略更适合突破上下文限制？",
+          "type": "mechanism",
+          "reason": "对比两种核心策略的原理差异，帮助在不同场景中做出正确选择。",
+          "difficulty": 3,
+          "expected_gain": "理解不同上下文突破策略的原理与适用场景。"
+        },
+        {
+          "question": "设计一个需要长文本处理的场景，写出你的分步策略",
+          "type": "practice",
+          "reason": "通过设计实际场景检验对上下文突破策略的掌握程度。",
+          "difficulty": 3,
+          "expected_gain": "获得长文本处理的实操经验与策略设计能力。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": [],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "aimo_14": {
+      "id": "aimo_14",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": "aimo_06",
+      "question": "温度参数是什么？",
+      "short_title": "温度参数",
+      "one_line_memory": "温度控制 AI 输出的随机性：高温 = 更有创意但不可控，低温 = 更稳定但保守。",
+      "tags": ["参数", "入门"],
+      "_learning_goal": "理解温度参数如何影响 AI 输出的随机性，掌握不同场景下的温度调节意识。",
+      "question_type": "concept",
+      "learning_role": "foundation",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "不同温度下，AI 的回答会有什么具体差异？",
+          "type": "example",
+          "reason": "具体案例能直观展示温度参数的实际效果。",
+          "difficulty": 2,
+          "expected_gain": "通过对比案例建立对温度效果的直观感知。"
+        },
+        {
+          "question": "什么时候用高温度、什么时候用低温度？",
+          "type": "application",
+          "reason": "掌握温度选择的决策规则是高频实用技能。",
+          "difficulty": 3,
+          "expected_gain": "获得不同场景下的温度选择指南。"
+        },
+        {
+          "question": "温度设置有没有‘最佳实践’？还是完全看场景？",
+          "type": "boundary",
+          "reason": "理解温度设置是否有通用规则，避免权威指南的误导。",
+          "difficulty": 3,
+          "expected_gain": "建立对温度参数的灵活认知，掌握场景化调节思维。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": [],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "aimo_15": {
+      "id": "aimo_15",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": "aimo_07",
+      "question": "什么是分步思考（Chain-of-Thought）？",
+      "short_title": "Chain-of-Thought",
+      "one_line_memory": "CoT 通过引导 AI 逐步推理，显著提升复杂问题的回答质量，是提示词工程的核心技术。",
+      "tags": ["CoT", "核心技术"],
+      "_learning_goal": "理解 Chain-of-Thought 的原理与使用场景，掌握引导 AI 逐步推理的核心技术。",
+      "question_type": "mechanism",
+      "learning_role": "mechanism",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "CoT 和'分步思考'有什么区别？为什么需要专门的术语？",
+          "type": "foundation",
+          "reason": "理解 CoT 起效的底层逻辑，是真正掌握它的前提。",
+          "difficulty": 3,
+          "expected_gain": "建立对 CoT 有效性的直觉理解。"
+        },
+        {
+          "question": "什么是 ReAct？它和 Chain-of-Thought 有什么区别？",
+          "type": "comparison",
+          "reason": "ReAct 是 CoT 的重要演进，对比学习能加深对两者的理解。",
+          "difficulty": 4,
+          "expected_gain": "理解 ReAct 的推理+行动模式及与 CoT 的区别。"
+        },
+        {
+          "question": "分步思考在什么场景下反而会降低效果？",
+          "type": "boundary",
+          "reason": "知道什么时候不用 CoT 和知道怎么用一样重要。",
+          "difficulty": 4,
+          "expected_gain": "识别 CoT 的适用边界和反模式。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": [],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "aimo_16": {
+      "id": "aimo_16",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": "aimo_07",
+      "question": "角色设定为什么有效？",
+      "short_title": "角色提示的原理",
+      "one_line_memory": "角色提示利用训练数据中的角色-风格关联，引导 AI 激活特定领域的知识模式和语气。",
+      "tags": ["角色提示", "核心技术"],
+      "_learning_goal": "理解角色提示如何利用训练数据中的角色-风格关联来引导 AI 输出。",
+      "question_type": "mechanism",
+      "learning_role": "mechanism",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "好的角色设定和坏的角色设定差在哪里？",
+          "type": "example",
+          "reason": "通过对比案例掌握角色提示的最佳写法。",
+          "difficulty": 3,
+          "expected_gain": "获得角色提示的设计原则与正反案例。"
+        },
+        {
+          "question": "多个角色设定可以叠加吗？会冲突吗？",
+          "type": "boundary",
+          "reason": "多角色场景是实际使用中的常见需求，需要了解其效果。",
+          "difficulty": 4,
+          "expected_gain": "理解多角色设定的可行性与潜在问题。"
+        },
+        {
+          "question": "角色提示是通过什么机制影响 AI 输出的？",
+          "type": "mechanism",
+          "reason": "深入理解角色提示的作用机制，有助于设计更精准的角色设定。",
+          "difficulty": 3,
+          "expected_gain": "从机制层面理解角色提示如何激活 AI 的特定知识模式。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": [],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "aimo_17": {
+      "id": "aimo_17",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": "aimo_08",
+      "question": "什么时候该换工具而不是优化提示词？",
+      "short_title": "工具选择vs提示词优化",
+      "one_line_memory": "当任务超出语言模型核心能力（如精确计算、实时数据、专业领域），换工具比优化提示词更高效。",
+      "tags": ["工具选择", "实践"],
+      "_learning_goal": "建立提示词优化与工具切换的决策框架，避免在错误方向上白费力气。",
+      "question_type": "application",
+      "learning_role": "application",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "不同 AI 工具各擅长什么？怎么选？",
+          "type": "comparison",
+          "reason": "了解工具矩阵才能做出明智的选择。",
+          "difficulty": 3,
+          "expected_gain": "建立 AI 工具选型的参考框架。"
+        },
+        {
+          "question": "实际工作中，如何判断一个问题该用提示词解决还是该用工具？",
+          "type": "application",
+          "reason": "建立提示词与工具选择的决策框架是实际工作中的高频需求。",
+          "difficulty": 3,
+          "expected_gain": "获得提示词与工具选择的实用决策方法。"
+        },
+        {
+          "question": "有没有提示词和工具都不适合的场景？",
+          "type": "boundary",
+          "reason": "认识到两者都不适用的边界，有助于避免强行使用 AI。",
+          "difficulty": 4,
+          "expected_gain": "建立对 AI 适用性的完整认知，知道何时该放弃 AI 方案。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": ["aimo_19"],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "aimo_18": {
+      "id": "aimo_18",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": "aimo_10",
+      "question": "常用提示词框架有哪些？",
+      "short_title": "提示词框架对比",
+      "one_line_memory": "主流框架包括 CRISPE、CREATE、RTF 等，各有侧重，关键是理解原理后灵活组合。",
+      "tags": ["框架", "实用"],
+      "_learning_goal": "了解主流提示词框架的优劣差异，能够根据任务类型灵活选用合适的框架。",
+      "question_type": "comparison",
+      "learning_role": "foundation",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "CRISPE 和 CREATE 框架哪个更好用？",
+          "type": "comparison",
+          "reason": "通过对比两个最流行的框架，掌握选择依据。",
+          "difficulty": 3,
+          "expected_gain": "深入理解两大主流框架的优劣与适用场景。"
+        },
+        {
+          "question": "怎么根据任务类型选择合适的框架？",
+          "type": "application",
+          "reason": "场景化选型是提示词框架的核心价值所在。",
+          "difficulty": 3,
+          "expected_gain": "获得任务类型到框架选择的映射指南。"
+        },
+        {
+          "question": "选一个框架，用它重构你最常用的一个提示词",
+          "type": "practice",
+          "reason": "通过真实案例检验对框架的理解深度，将知识转化为技能。",
+          "difficulty": 3,
+          "expected_gain": "获得使用框架重构提示词的实操经验与信心。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": [],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "aimo_19": {
+      "id": "aimo_19",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": "aimo_17",
+      "question": "不同 AI 工具各擅长什么？",
+      "short_title": "AI工具能力矩阵",
+      "one_line_memory": "不同工具在不同维度各有优势：写作、代码、搜索、图像、推理等，选型需匹配任务需求。",
+      "tags": ["AI工具", "选型"],
+      "_learning_goal": "建立 AI 工具能力矩阵认知，能够根据任务需求快速匹配最合适的工具。",
+      "question_type": "comparison",
+      "learning_role": "foundation",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "2026 年最值得掌握的 AI 工具有哪些？",
+          "type": "fact",
+          "reason": "了解最新工具生态有助于及时更新技能栈。",
+          "difficulty": 2,
+          "expected_gain": "建立当前 AI 工具的全景认知。"
+        },
+        {
+          "question": "不同 AI 工具的能力差异主要来自哪里？模型？训练数据？还是系统设计？",
+          "type": "mechanism",
+          "reason": "理解工具差异的根源有助于做出更本质的判断。",
+          "difficulty": 3,
+          "expected_gain": "建立对 AI 工具能力差异来源的系统性理解。"
+        },
+        {
+          "question": "如何根据任务类型快速选择合适的 AI 工具？",
+          "type": "application",
+          "reason": "将工具认知转化为实际的快速选型能力。",
+          "difficulty": 3,
+          "expected_gain": "获得一套任务驱动的 AI 工具快速选型方法。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": [],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    },
+    "aimo_20": {
+      "id": "aimo_20",
+      "topic_id": "topic_prompt_thinking",
+      "parent_id": "aimo_12",
+      "question": "怎么判断 AI 回答的可信度？",
+      "short_title": "AI回答可信度判断",
+      "one_line_memory": "交叉验证、关注置信度信号、要求提供来源、识别常见幻觉模式是判断可信度的核心方法。",
+      "tags": ["事实核查", "批判性思维"],
+      "_learning_goal": "掌握判断 AI 回答可信度的核心方法，建立对 AI 输出的批判性验证习惯。",
+      "question_type": "application",
+      "learning_role": "application",
+      "answer": {
+        "summary": "点击生成后查看完整解释",
+        "plain": "",
+        "mechanism": "",
+        "misunderstandings": [],
+        "example": ""
+      },
+      "fact_check": {
+        "explainable": [],
+        "to_verify": [],
+        "suggested_sources": [],
+        "avoid_conclusions": []
+      },
+      "followups": [
+        {
+          "question": "有没有工具或方法可以辅助验证 AI 的回答？",
+          "type": "application",
+          "reason": "自动化验证工具能大幅提升核查效率。",
+          "difficulty": 3,
+          "expected_gain": "了解实用的 AI 回答验证工具与方法。"
+        },
+        {
+          "question": "什么时候应该完全信任 AI 的回答？有没有安全标准？",
+          "type": "boundary",
+          "reason": "明确信任边界有助于在安全场景下放心使用 AI。",
+          "difficulty": 3,
+          "expected_gain": "建立 AI 回答信任边界的判断框架。"
+        },
+        {
+          "question": "可信度判断能力和批判性思维是什么关系？",
+          "type": "connection",
+          "reason": "将 AI 可信度判断与通用思维能力联系起来，提升学习迁移价值。",
+          "difficulty": 3,
+          "expected_gain": "理解 AI 时代的批判性思维新内涵。"
+        }
+      ],
+      "checks": [],
+      "quality": {
+        "parse_failed": false,
+        "repaired": false,
+        "regenerated_count": 0,
+        "source_required": false,
+        "is_demo": true,
+        "generation_status": "pending",
+        "validation_errors": [],
+        "validation_warnings": []
+      },
+      "mastery": {
+        "is_visited": false,
+        "is_starred": false,
+        "review_later": false,
+        "check_status": "untested"
+      },
+      "links": {
+        "children_ids": [],
+        "related_node_ids": [],
+        "prerequisite_node_ids": []
+      },
+      "created_at": 0,
+      "last_accessed_at": 0
+    }
+  }
+}

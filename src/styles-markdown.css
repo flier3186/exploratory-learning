@@ -1,0 +1,48 @@
+.markdown-body p {
+  margin: 0 0 10px;
+  line-height: 1.75;
+}
+
+.markdown-body p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body strong {
+  font-weight: 800;
+  color: var(--text);
+}
+
+.markdown-body code {
+  background: rgba(91, 64, 35, 0.1);
+  border-radius: 5px;
+  padding: 1px 6px;
+  font-size: 0.88em;
+  font-family: "Cascadia Code", "Fira Code", monospace;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  margin: 0 0 10px;
+  padding-left: 20px;
+  line-height: 1.75;
+}
+
+.markdown-body li {
+  margin-bottom: 4px;
+}
+
+.markdown-body blockquote {
+  margin: 0 0 10px;
+  padding: 8px 14px;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  background: rgba(184, 117, 26, 0.06);
+  color: var(--muted);
+}
+
+.markdown-body h4,
+.markdown-body h5 {
+  margin: 14px 0 6px;
+  font-size: 0.95rem;
+  font-weight: 800;
+}

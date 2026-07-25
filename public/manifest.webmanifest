@@ -1,0 +1,51 @@
+{
+  "id": "/exploratory-learning-app/",
+  "name": "探索式 AI 学习工具",
+  "short_name": "探索学习",
+  "description": "用追问，把答案变成知识树。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fef9ef",
+  "theme_color": "#df8a28",
+  "orientation": "portrait-primary",
+  "categories": ["education", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "新建分类",
+      "short_name": "新建分类",
+      "description": "创建一个新的学习主题分类文件夹",
+      "url": "/?action=new-topic",
+      "icons": [{ "src": "/app-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "搜索",
+      "short_name": "搜索",
+      "description": "搜索已有的学习主题与知识点",
+      "url": "/?action=search",
+      "icons": [{ "src": "/app-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "模板市场",
+      "short_name": "模板市场",
+      "description": "浏览并应用内置学习模板",
+      "url": "/?action=templates",
+      "icons": [{ "src": "/app-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ]
+}
