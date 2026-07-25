@@ -322,6 +322,10 @@ export interface PathStep {
   currentMastery: CheckStatus
   confidence?: 1|2|3|4|5
   nextReviewAt?: number
+  /** 人类可读的推荐理由细节，用于增强可解释性 */
+  reasonDetail?: string
+  /** 预估学习收益（0-100），用于排序和展示 */
+  estimatedGain?: number
 }
 
 export type PathStepReason =
