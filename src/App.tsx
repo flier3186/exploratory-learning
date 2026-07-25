@@ -620,6 +620,7 @@ export default function App() {
                 node={app.selectedNode}
                 isGenerating={gen.isGenerating}
                 highlightKey={cardHighlightKey}
+                onNotice={setNotice}
                 onToggleStar={() => app.toggleStar(app.selectedNode!.id)}
                 onConfidence={(value) => app.setConfidence(app.selectedNode!.id, value)}
                 onCheckStatus={(status) => app.setCheckStatus(app.selectedNode!.id, status)}
