@@ -546,13 +546,15 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: min(88vw, 340px);
+    width: min(78vw, 310px);
     height: 100vh;
     height: 100dvh;
     max-height: none;
     z-index: 1000;
-    overflow: auto;
+    overflow: hidden;
     box-shadow: 0 12px 50px rgba(48, 39, 25, 0.22);
+    display: flex;
+    flex-direction: column;
   }
 
   .sidebar.collapsed {
@@ -583,11 +585,11 @@
   }
 
   .topic-list {
-    max-height: 128px;
+    max-height: 80px;
     grid-auto-flow: column;
     grid-auto-columns: minmax(170px, 72%);
     overflow-x: auto;
-    overflow-y: hidden;
+    overflow-y: auto;
     padding-bottom: 6px;
   }
 
@@ -606,12 +608,12 @@
     font-size: 0.65rem;
   }
 
-  .tree-panel {
-    max-height: 220px;
-    padding: 12px;
-    border: 1px solid var(--line);
-    border-radius: 20px;
-    background: rgba(255, 250, 240, 0.62);
+  /* 移动端侧边栏展开时：让 tree-panel 占据剩余空间并可滚动 */
+  .sidebar:not(.collapsed) .tree-panel {
+    flex: 1;
+    min-height: 100px;
+    overflow-y: auto;
+    max-height: none;
   }
 
   .node-tree {
@@ -644,7 +646,7 @@ button,
     position: fixed;
     top: 0;
     left: 0;
-    width: min(88vw, 340px);
+    width: min(78vw, 300px);
     height: 100vh;
     height: 100dvh;
     max-height: none;
