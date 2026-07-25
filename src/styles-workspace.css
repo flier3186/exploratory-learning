@@ -732,6 +732,95 @@ textarea {
   margin: 8px 0;
 }
 
+/* ====== 移动端可折叠内容块 ====== */
+
+.answer-block-collapsible {
+  padding: 0;
+  overflow: hidden;
+}
+
+.answer-block-summary {
+  cursor: pointer;
+  font-weight: 800;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 18px;
+  font-size: 1rem;
+  color: var(--text);
+  user-select: none;
+}
+
+.answer-block-summary::-webkit-details-marker {
+  display: none;
+}
+
+.answer-block-arrow {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  color: var(--faint);
+  font-size: 0.85em;
+}
+
+.answer-block-collapsible[open] .answer-block-arrow {
+  transform: rotate(90deg);
+}
+
+.answer-block-content {
+  padding: 0 18px 16px;
+  animation: details-reveal 0.25s ease;
+}
+
+.answer-block-content p {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* 事实核验可折叠面板 */
+.fact-panel-collapsible {
+  cursor: pointer;
+}
+
+.fact-panel-summary {
+  cursor: pointer;
+  font-weight: 800;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0;
+  user-select: none;
+}
+
+.fact-panel-summary::-webkit-details-marker {
+  display: none;
+}
+
+.fact-panel-summary::before {
+  content: '▸';
+  display: inline-block;
+  transition: transform 0.2s ease;
+  color: var(--faint);
+  margin-right: 4px;
+}
+
+.fact-panel-collapsible[open] .fact-panel-summary::before {
+  transform: rotate(90deg);
+}
+
+.fact-panel-title {
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.fact-panel-hint {
+  color: var(--faint);
+  font-weight: 400;
+  font-size: 0.8rem;
+}
+
 .mastery-row {
   display: flex;
   align-items: center;
@@ -905,5 +994,69 @@ textarea {
   .answer-block,
   .fact-card {
     padding: 12px;
+  }
+}
+
+/* ===== 移动端浮动按钮（回到顶部 / 快速追问） ===== */
+
+.mobile-fab-group {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .mobile-fab-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: fixed;
+    right: 16px;
+    bottom: 20px;
+    z-index: 500;
+    animation: fab-in 0.25s ease;
+  }
+
+  @keyframes fab-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .mobile-fab {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: rgba(25, 25, 25, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--text, #f0f0f0);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+    transition: transform 0.15s ease, background 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .mobile-fab:active {
+    transform: scale(0.92);
+  }
+
+  .fab-top {
+    background: rgba(255, 176, 0, 0.9);
+    color: #1a1a1a;
+    border-color: rgba(255, 176, 0, 0.5);
+  }
+
+  .fab-followup {
+    background: rgba(91, 143, 185, 0.9);
+    color: #fff;
+    border-color: rgba(91, 143, 185, 0.4);
   }
 }
