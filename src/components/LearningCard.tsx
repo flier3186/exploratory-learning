@@ -37,11 +37,13 @@ export const LearningCard = memo(function LearningCard(props: {
   onSingleNodeQuiz?: () => void
   onOpenFeynman?: () => void
   highlightKey?: number
+  onNotice?: (msg: string) => void
 }) {
-  const { node, onToggleStar, onConfidence, onCheckStatus, onAskFollowup, onAskFollowups, onFeedback, onReplaceFollowups, onGenerate, isGenerating, onSingleNodeQuiz, onOpenFeynman, highlightKey } = props
+  const { node, onToggleStar, onConfidence, onCheckStatus, onAskFollowup, onAskFollowups, onFeedback, onReplaceFollowups, onGenerate, isGenerating, onSingleNodeQuiz, onOpenFeynman, highlightKey, onNotice } = props
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [selectedFollowupIds, setSelectedFollowupIds] = useState<string[]>([])
   const [isHighlighted, setIsHighlighted] = useState(false)
+  const [ttsSupported] = useState(() => typeof window !== 'undefined' && 'speechSynthesis' in window)
   const voicesRef = useRef<SpeechSynthesisVoice[]>([])
   const speakTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const masteryOptions: Array<{ value: 1 | 2 | 3 | 4 | 5; label: string }> = [
@@ -88,7 +90,8 @@ export const LearningCard = memo(function LearningCard(props: {
   const selectedFollowups = visibleFollowups.filter((followup) => selectedFollowupIds.includes(followup.id))
 
   function toggleSpeak() {
-    if (!('speechSynthesis' in window)) {
+    if (!ttsSupported || !('speechSynthesis' in window)) {
+      onNotice?.('当前浏览器不支持语音朗读，建议使用 Chrome 或 Edge 浏览器。')
       return
     }
     if (isSpeaking) {
@@ -112,23 +115,27 @@ export const LearningCard = memo(function LearningCard(props: {
     utterance.lang = 'zh-CN'
     utterance.rate = 0.9
     utterance.pitch = 1
+    utterance.volume = 1
     // Use pre-loaded voices, fall back to getVoices()
     const voices = voicesRef.current.length > 0
       ? voicesRef.current
       : (window.speechSynthesis?.getVoices() || [])
-    // Prefer zh-CN, then zh-TW, then any zh prefix, then any containing zh
+    // Prefer zh-CN, then zh-TW, then any zh prefix, then any containing zh, then first available
     const zhVoice =
       voices.find((v) => v.lang === 'zh-CN') ||
       voices.find((v) => v.lang === 'zh-TW') ||
       voices.find((v) => v.lang.startsWith('zh')) ||
       voices.find((v) => v.lang.includes('zh')) ||
+      voices[0] ||
       null
+    // 显式赋值 voice（某些浏览器不赋值会导致静默失败）
     if (zhVoice) utterance.voice = zhVoice
     utterance.onend = () => setIsSpeaking(false)
     utterance.onerror = (event) => {
       // Only show error state for real errors, not cancellation
       if (event.error !== 'canceled' && event.error !== 'interrupted') {
         setIsSpeaking(false)
+        onNotice?.('语音朗读出现问题，可尝试刷新页面或换用其他浏览器。')
       }
     }
     // Cancel any ongoing speech first, then speak after a brief delay
@@ -139,10 +146,17 @@ export const LearningCard = memo(function LearningCard(props: {
       try {
         window.speechSynthesis.speak(utterance)
         setIsSpeaking(true)
+        // 安全网：如果 3 秒后 onstart 从未触发且仍标记为 speaking，可能静默失败了
+        setTimeout(() => {
+          if (isSpeaking && !window.speechSynthesis.speaking) {
+            setIsSpeaking(false)
+          }
+        }, 3000)
       } catch {
         setIsSpeaking(false)
+        onNotice?.('语音朗读启动失败，可尝试刷新页面或换用其他浏览器。')
       }
-    }, 150)
+    }, 200)
   }
 
   function toggleFollowupSelection(followupId: string) {
@@ -174,7 +188,7 @@ export const LearningCard = memo(function LearningCard(props: {
         </div>
         <div className="card-actions">
           <button className={isSpeaking ? 'listen-button active' : 'listen-button'} onClick={toggleSpeak}>
-            {isSpeaking ? '停止朗读' : '朗读摘要'}
+            {isSpeaking ? '停止朗读' : ttsSupported ? '朗读摘要' : '朗读不可用'}
           </button>
           <button className={node.mastery.is_starred ? 'star active' : 'star'} onClick={onToggleStar}>
             {node.mastery.is_starred ? '重点回看' : '加入重点'}
