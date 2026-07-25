@@ -122,6 +122,97 @@
   background: rgba(255, 176, 0, 0.08);
 }
 
+/* Edit mode toolbar */
+.graph-edit-toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 8px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.graph-edit-toolbar .graph-toolbar-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.graph-edit-toolbar .toolbar-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 600;
+  margin-right: 2px;
+}
+
+.graph-edit-toolbar button {
+  border-radius: 999px;
+  padding: 6px 12px;
+  color: #c8c8c8;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.18s ease;
+}
+
+.graph-edit-toolbar button:hover {
+  color: #fff;
+  border-color: rgba(66, 153, 225, 0.4);
+  background: rgba(66, 153, 225, 0.08);
+}
+
+.graph-edit-toolbar button.active.edit-mode {
+  color: #fff;
+  border-color: rgba(66, 153, 225, 0.6);
+  background: rgba(66, 153, 225, 0.18);
+  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.15);
+}
+
+.graph-edit-toolbar .graph-reset-layout-btn {
+  color: #c8c8c8;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.graph-edit-toolbar .graph-reset-layout-btn:hover {
+  color: #ff9800;
+  border-color: rgba(255, 152, 0, 0.4);
+  background: rgba(255, 152, 0, 0.08);
+}
+
+.edit-mode-hint {
+  font-size: 0.76rem;
+  color: #4299e1;
+  font-weight: 600;
+  padding: 4px 10px;
+  background: rgba(66, 153, 225, 0.1);
+  border-radius: 6px;
+  border: 1px solid rgba(66, 153, 225, 0.2);
+}
+
+/* Node edit mode visual feedback */
+.graph-node.link-source circle {
+  filter: drop-shadow(0 0 6px rgba(66, 153, 225, 0.8));
+}
+
+.graph-node.link-source {
+  animation: link-source-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes link-source-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.graph-node.edit-active {
+  cursor: pointer;
+}
+
+.graph-node.edit-active:hover circle {
+  filter: drop-shadow(0 0 4px rgba(66, 153, 225, 0.5));
+}
+
 /* Legend */
 .graph-legend {
   display: flex;
@@ -573,6 +664,26 @@
   font-weight: 600;
 }
 
+.path-step-gain {
+  color: #4ade80;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+}
+
+.path-step-reason-detail {
+  font-size: 0.76rem;
+  color: var(--muted);
+  line-height: 1.5;
+  padding: 6px 10px;
+  margin-top: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 4px 4px 0;
+}
+
 /* Step action hint (整卡可点击，底部提示文字) */
 .path-step-action {
   justify-self: start;
@@ -759,6 +870,124 @@
 .trend-wrap svg {
   width: 100%;
   max-height: 160px;
+}
+
+/* Efficiency trend */
+.efficiency-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+  margin-bottom: 14px;
+}
+
+.efficiency-wrap svg {
+  width: 100%;
+  max-height: 160px;
+}
+
+/* Retention gauge */
+.retention-wrap {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 10px 0;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.retention-gauge {
+  flex-shrink: 0;
+}
+
+.retention-svg {
+  width: 140px;
+  height: 80px;
+}
+
+.retention-detail {
+  flex: 1;
+  min-width: 180px;
+}
+
+.retention-detail p {
+  margin: 0 0 6px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.retention-advice {
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* SRS completion rate */
+.srs-completion-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  margin-bottom: 14px;
+}
+
+.srs-completion-bar {
+  flex: 1;
+  height: 12px;
+  background: rgba(91, 64, 35, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.srs-completion-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3f8d70, #5b8fb9);
+  border-radius: 6px;
+  transition: width 0.4s ease;
+}
+
+.srs-completion-text {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Learning rhythm grid */
+.rhythm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+  padding: 10px 0;
+  margin-bottom: 14px;
+}
+
+.rhythm-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  background: rgba(91, 143, 185, 0.06);
+  border: 1px solid rgba(91, 143, 185, 0.12);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.rhythm-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.rhythm-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.rhythm-label {
+  font-size: 0.72rem;
+  color: var(--muted);
 }
 
 /* ===== Responsive ===== */
