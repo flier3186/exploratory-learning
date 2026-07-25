@@ -462,6 +462,7 @@ const KnowledgeGraphModal = memo(function KnowledgeGraphModal(
               <p>添加学习内容后，知识图谱会自动生成。</p>
             </div>
           ) : (
+            <>
             <svg
               ref={svgRef}
               viewBox={graphData.viewBox}
@@ -599,6 +600,91 @@ const KnowledgeGraphModal = memo(function KnowledgeGraphModal(
                 })}
               </g>
             </svg>
+
+            {/* Minimap / Overview thumbnail */}
+            <div className="graph-minimap">
+              <div className="graph-minimap-label">缩略图</div>
+              <svg
+                viewBox={graphData.viewBox}
+                className="graph-minimap-svg"
+                onClick={(e) => {
+                  // Click on minimap to jump to that area
+                  const svg = e.currentTarget
+                  const rect = svg.getBoundingClientRect()
+                  const [vbX, vbY, vbW, vbH] = parseViewBox(graphData.viewBox)
+                  const clickX = ((e.clientX - rect.left) / rect.width) * vbW + vbX
+                  const clickY = ((e.clientY - rect.top) / rect.height) * vbH + vbY
+                  // Center the graph on the clicked point
+                  const wrap = svgWrapRef.current
+                  if (!wrap) return
+                  const wrapRect = wrap.getBoundingClientRect()
+                  const targetScale = Math.max(transform.scale, 0.6)
+                  setTransform({
+                    scale: targetScale,
+                    translateX: wrapRect.width / 2 - clickX * targetScale,
+                    translateY: wrapRect.height / 2 - clickY * targetScale,
+                  })
+                }}
+              >
+                {/* Minimap edges */}
+                {filteredEdges.map((edge) => {
+                  const source = nodeMap.get(edge.source)
+                  const target = nodeMap.get(edge.target)
+                  if (!source || !target) return null
+                  return (
+                    <line
+                      key={`mm-${edge.source}-${edge.target}`}
+                      x1={source.x}
+                      y1={source.y}
+                      x2={target.x}
+                      y2={target.y}
+                      stroke={EDGE_COLORS[edge.type]}
+                      strokeWidth={1.5}
+                      opacity={0.4}
+                    />
+                  )
+                })}
+                {/* Minimap nodes */}
+                {graphData.nodes.map((node) => (
+                  <circle
+                    key={`mm-${node.id}`}
+                    cx={node.x}
+                    cy={node.y}
+                    r={4}
+                    fill={ROLE_COLORS[node.role]}
+                    opacity={0.7}
+                  />
+                ))}
+                {/* Viewport indicator rectangle */}
+                {(() => {
+                  const [vbX, vbY, vbW, vbH] = parseViewBox(graphData.viewBox)
+                  const wrap = svgWrapRef.current
+                  if (!wrap) return null
+                  const wrapRect = wrap.getBoundingClientRect()
+                  const naturalScale = Math.min(wrapRect.width / vbW, wrapRect.height / vbH)
+                  // The visible area in SVG coordinates
+                  const visW = (wrapRect.width / transform.scale) / naturalScale
+                  const visH = (wrapRect.height / transform.scale) / naturalScale
+                  // The top-left of the visible area in SVG coordinates
+                  const visX = (vbX + vbW / 2) - visW / 2 - (transform.translateX / transform.scale / naturalScale - vbW / 2)
+                  const visY = (vbY + vbH / 2) - visH / 2 - (transform.translateY / transform.scale / naturalScale - vbH / 2)
+                  return (
+                    <rect
+                      x={visX}
+                      y={visY}
+                      width={visW}
+                      height={visH}
+                      fill="none"
+                      stroke="#ffb020"
+                      strokeWidth={2}
+                      strokeDasharray="4,2"
+                      opacity={0.8}
+                    />
+                  )
+                })()}
+              </svg>
+            </div>
+            </>
           )}
 
           {/* Tooltip (HTML overlay) */}
