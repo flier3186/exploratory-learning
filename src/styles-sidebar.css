@@ -84,6 +84,21 @@
   background: rgba(255, 176, 0, 0.13);
 }
 
+/* 分享按钮：突出显示 */
+.quick-actions button.share-btn {
+  color: #fff8eb;
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 700;
+}
+
+.quick-actions button.share-btn:hover {
+  background: #4a7da8;
+  border-color: #4a7da8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(91, 143, 185, 0.3);
+}
+
 /* 新功能解锁标记：小圆点 + 微弱脉动 */
 .quick-actions button.feature-new {
   position: relative;
