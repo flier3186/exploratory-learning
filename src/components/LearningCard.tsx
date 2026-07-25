@@ -197,7 +197,7 @@ export const LearningCard = memo(function LearningCard(props: {
 
       {(node.question_type === 'fact' || node.quality.source_required) && <FactCheckPanel factCheck={node.fact_check} />}
 
-      <ConclusionSection summary={node.answer.summary} plain={node.answer.plain} />
+      <ConclusionSection summary={node.answer.summary} />
 
       <div className="answer-grid">
         <ArticleBlock title="通俗解释" body={node.answer.plain} />
@@ -205,8 +205,8 @@ export const LearningCard = memo(function LearningCard(props: {
         <ArticleBlock title="具体例子" body={node.answer.example} />
       </div>
 
-      <details className="mistakes">
-        <summary>易错点</summary>
+      <details className="mistakes" open>
+        <summary>易错点（{node.answer.misunderstandings.length} 条）</summary>
         <ul>
           {node.answer.misunderstandings.map((item) => (
             <li key={item}>{item}</li>
@@ -390,16 +390,15 @@ function ArticleBlock({ title, body, tone }: { title: string; body: string; tone
   )
 }
 
-function ConclusionSection({ summary, plain }: { summary: string; plain: string }) {
-  if (!summary && !plain) return null
+function ConclusionSection({ summary }: { summary: string }) {
+  if (!summary) return null
   return (
     <section className="conclusion-section">
       <div className="conclusion-label">
         <span className="conclusion-icon" aria-hidden="true">✦</span>
         <span>一句话结论</span>
       </div>
-      {summary && <p className="conclusion-summary">{summary}</p>}
-      {plain && <p className="conclusion-plain">{plain}</p>}
+      <p className="conclusion-summary">{summary}</p>
     </section>
   )
 }
