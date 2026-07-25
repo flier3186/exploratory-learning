@@ -3,6 +3,26 @@ import { CHECK_INTENT_LABEL, CHECK_STATUS_LABEL, FOLLOWUP_LABEL, ROLE_META } fro
 import type { CheckStatus, FactCheckBlock, FeedbackValue, FollowupQuestion, LearningNode } from '../types'
 import { MarkdownText } from './MarkdownText'
 
+/** 检测当前是否为移动端视口（≤760px），用于控制折叠默认行为 */
+function useIsMobile(): boolean {
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false
+    // matchMedia 在 jsdom 测试环境中可能不存在，回退到 innerWidth 判断
+    if (typeof window.matchMedia === 'function') {
+      return window.matchMedia('(max-width: 760px)').matches
+    }
+    return window.innerWidth <= 760
+  })
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
+    const mql = window.matchMedia('(max-width: 760px)')
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mql.addEventListener('change', handler)
+    return () => mql.removeEventListener('change', handler)
+  }, [])
+  return isMobile
+}
+
 export const LearningCard = memo(function LearningCard(props: {
   node: LearningNode
   onToggleStar: () => void
@@ -200,12 +220,12 @@ export const LearningCard = memo(function LearningCard(props: {
       <ConclusionSection summary={node.answer.summary} />
 
       <div className="answer-grid">
-        <ArticleBlock title="通俗解释" body={node.answer.plain} />
-        <ArticleBlock title="关键机制" body={node.answer.mechanism} />
-        <ArticleBlock title="具体例子" body={node.answer.example} />
+        <ArticleBlock title="通俗解释" body={node.answer.plain} defaultOpen />
+        <ArticleBlock title="关键机制" body={node.answer.mechanism} mobileCollapsed />
+        <ArticleBlock title="具体例子" body={node.answer.example} mobileCollapsed />
       </div>
 
-      <details className="mistakes" open>
+      <details className="mistakes">
         <summary>易错点（{node.answer.misunderstandings.length} 条）</summary>
         <ul>
           {node.answer.misunderstandings.map((item) => (
@@ -360,8 +380,12 @@ function FactCheckPanel(props: { factCheck: FactCheckBlock }) {
   if (!sections.length) return null
 
   return (
-    <section className="fact-panel">
-      <div className="section-title">
+    <details className="fact-panel fact-panel-collapsible">
+      <summary className="fact-panel-summary">
+        <span className="fact-panel-title">事实核验</span>
+        <small className="fact-panel-hint">{sections.length} 个维度 · 点击展开</small>
+      </summary>
+      <div className="section-title" style={{ marginTop: 12 }}>
         <h3>事实核验</h3>
         <p>先区分“能学习的解释”和“必须查证的事实”。</p>
       </div>
@@ -377,16 +401,33 @@ function FactCheckPanel(props: { factCheck: FactCheckBlock }) {
           </article>
         ))}
       </div>
-    </section>
+    </details>
   )
 }
 
-function ArticleBlock({ title, body, tone }: { title: string; body: string; tone?: 'primary' }) {
+function ArticleBlock({ title, body, tone, defaultOpen, mobileCollapsed }: { title: string; body: string; tone?: 'primary'; defaultOpen?: boolean; mobileCollapsed?: boolean }) {
+  const isMobile = useIsMobile()
+  // 移动端：mobileCollapsed 的块默认折叠，其余默认展开
+  // 桌面端：全部默认展开（用 div 保持原有网格布局）
+  if (!isMobile || !mobileCollapsed) {
+    return (
+      <article className={tone === 'primary' ? 'answer-block primary' : 'answer-block'}>
+        <h3>{title}</h3>
+        <MarkdownText text={body} />
+      </article>
+    )
+  }
+  // 移动端折叠模式
   return (
-    <article className={tone === 'primary' ? 'answer-block primary' : 'answer-block'}>
-      <h3>{title}</h3>
-      <MarkdownText text={body} />
-    </article>
+    <details className="answer-block answer-block-collapsible" open={defaultOpen}>
+      <summary className="answer-block-summary">
+        <span className="answer-block-arrow" aria-hidden="true">▸</span>
+        {title}
+      </summary>
+      <div className="answer-block-content">
+        <MarkdownText text={body} />
+      </div>
+    </details>
   )
 }
 
