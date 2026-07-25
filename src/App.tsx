@@ -50,6 +50,9 @@ export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 760)
   const [topicDraft, setTopicDraft] = useState('')
   const askCardRef = useRef<HTMLElement | null>(null)
+  // 移动端：滚动超过一屏后显示"回到顶部"浮动按钮
+  const [showBackToTop, setShowBackToTop] = useState(false)
+  const workspaceRef = useRef<HTMLElement | null>(null)
 
   // 渐进式功能展示：根据用户数据量决定哪些功能按钮可见
   const nodeCount = Object.keys(app.state.nodes).length
@@ -172,6 +175,24 @@ export default function App() {
 
     return () => clearTimeout(timer)
   }, [app.srsDueCount])
+
+  // 移动端：监听页面滚动，控制"回到顶部"按钮显隐
+  useEffect(() => {
+    const onScroll = () => {
+      setShowBackToTop(window.scrollY > window.innerHeight * 0.8)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  const handleBackToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
+
+  // 移动端：快速跳转到追问区域
+  const handleJumpToFollowups = useCallback(() => {
+    document.querySelector('.followup-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [])
 
   const handleGenerate = useCallback((inputQuestion: string, parentId: string | null, roleHint?: LearningRole) => {
     askCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -523,7 +544,7 @@ export default function App() {
           />
         )}
 
-        <main className="workspace">
+        <main className="workspace" ref={workspaceRef}>
           <header className="topbar">
             <div>
               <p className="eyebrow">探索式学习</p>
@@ -616,6 +637,34 @@ export default function App() {
             />
           )}
         </main>
+
+        {/* 移动端浮动按钮：回到顶部 + 快速追问 */}
+        {showBackToTop && (
+          <div className="mobile-fab-group">
+            {app.selectedNode && (
+              <button
+                className="mobile-fab fab-followup"
+                onClick={handleJumpToFollowups}
+                title="跳转到追问区"
+                aria-label="跳转到追问区"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </button>
+            )}
+            <button
+              className="mobile-fab fab-top"
+              onClick={handleBackToTop}
+              title="回到顶部"
+              aria-label="回到顶部"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
+                <path d="M12 19V5M6 11l6-6 6 6" />
+              </svg>
+            </button>
+          </div>
+        )}
 
         {settingsOpen && (
           <SettingsModal
