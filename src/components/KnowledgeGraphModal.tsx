@@ -42,6 +42,19 @@ interface KnowledgeGraphModalProps {
   selectedNodeId: string | null
   onClose: () => void
   onOpenNode: (nodeId: string) => void
+  // New: edit mode for link creation
+  editMode: 'none' | 'addRelated' | 'addPrerequisite'
+  onSetEditMode: (mode: 'none' | 'addRelated' | 'addPrerequisite') => void
+  linkSourceId: string | null
+  onEditNodeClick: (nodeId: string) => {
+    isSource: boolean
+    isTarget: boolean
+    linkType: 'related' | 'prerequisite' | null
+  }
+  onToggleLink: (nodeId: string, otherNodeId: string, linkType: 'related' | 'prerequisite') => void
+  // New: node dragging
+  onSetNodePosition: (nodeId: string, x: number, y: number) => void
+  onResetLayout: () => void
 }
 
 interface Transform {
@@ -157,6 +170,13 @@ const KnowledgeGraphModal = memo(function KnowledgeGraphModal(
     selectedNodeId,
     onClose,
     onOpenNode,
+    editMode,
+    onSetEditMode,
+    linkSourceId,
+    onEditNodeClick,
+    onToggleLink,
+    onSetNodePosition,
+    onResetLayout,
   } = props
 
   // Pan / Zoom state
@@ -176,6 +196,12 @@ const KnowledgeGraphModal = memo(function KnowledgeGraphModal(
   const svgWrapRef = useRef<HTMLDivElement>(null)
   const isPanningRef = useRef(false)
   const lastPosRef = useRef({ x: 0, y: 0 })
+
+  // Node drag state
+  const draggingNodeRef = useRef<string | null>(null)
+  const dragStartRef = useRef({ x: 0, y: 0, nodeX: 0, nodeY: 0 })
+  const dragMovedRef = useRef(false)
+  const DRAG_THRESHOLD = 4 // pixels — if moved less than this, treat as click
 
   // Touch state for pinch zoom
   const touchStartDistRef = useRef(0)
@@ -379,6 +405,97 @@ const KnowledgeGraphModal = memo(function KnowledgeGraphModal(
     fitToView()
   }, [fitToView])
 
+  // ─── Focus node (center on a specific node) ───────────────────────────
+
+  const focusNode = useCallback((nodeId: string) => {
+    const node = graphData.nodes.find((n) => n.id === nodeId)
+    const wrap = svgWrapRef.current
+    if (!node || !wrap) return
+    const rect = wrap.getBoundingClientRect()
+    const targetScale = Math.max(transform.scale, 1.2)
+    setTransform({
+      scale: targetScale,
+      translateX: rect.width / 2 - node.x * targetScale,
+      translateY: rect.height / 2 - node.y * targetScale,
+    })
+  }, [graphData.nodes, transform.scale])
+
+  // ─── Node drag handlers ──────────────────────────────────────────────
+
+  const handleNodePointerDown = useCallback((
+    e: React.PointerEvent<SVGGElement>,
+    node: GraphLayoutNode,
+  ) => {
+    // In edit mode, don't start dragging (let click handle link creation)
+    if (editMode !== 'none') return
+
+    e.stopPropagation()
+    e.preventDefault()
+    draggingNodeRef.current = node.id
+    dragMovedRef.current = false
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      nodeX: node.x,
+      nodeY: node.y,
+    }
+    ;(e.currentTarget as Element).setPointerCapture?.(e.pointerId)
+  }, [editMode])
+
+  const handleNodePointerMove = useCallback((e: React.PointerEvent<SVGGElement>) => {
+    if (!draggingNodeRef.current) return
+
+    const dx = e.clientX - dragStartRef.current.x
+    const dy = e.clientY - dragStartRef.current.y
+
+    if (!dragMovedRef.current && Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) {
+      return
+    }
+
+    dragMovedRef.current = true
+
+    // Convert screen delta to SVG coordinates
+    const scale = transform.scale
+    const svgDx = dx / scale
+    const svgDy = dy / scale
+
+    const newX = dragStartRef.current.nodeX + svgDx
+    const newY = dragStartRef.current.nodeY + svgDy
+
+    onSetNodePosition(draggingNodeRef.current, newX, newY)
+  }, [transform.scale, onSetNodePosition])
+
+  const handleNodePointerUp = useCallback((
+    _e: React.PointerEvent<SVGGElement>,
+    node: GraphLayoutNode,
+  ) => {
+    const wasDragging = dragMovedRef.current
+    draggingNodeRef.current = null
+    dragMovedRef.current = false
+
+    // If it was a drag (not a click), don't open the node
+    if (wasDragging) return
+
+    // In edit mode, handle link creation
+    if (editMode !== 'none') {
+      const result = onEditNodeClick(node.id)
+      if (result.isTarget && linkSourceId && result.linkType) {
+        onToggleLink(linkSourceId, node.id, result.linkType)
+      }
+      return
+    }
+
+    // Normal click: open node
+    onOpenNode(node.id)
+  }, [editMode, onEditNodeClick, linkSourceId, onToggleLink, onOpenNode])
+
+  // ─── Node double-click: focus ─────────────────────────────────────────
+
+  const handleNodeDoubleClick = useCallback((nodeId: string) => {
+    if (editMode !== 'none') return
+    focusNode(nodeId)
+  }, [editMode, focusNode])
+
   // ─── Tooltip handlers ────────────────────────────────────────────────
 
   const showTooltip = useCallback(
@@ -454,6 +571,35 @@ const KnowledgeGraphModal = memo(function KnowledgeGraphModal(
           </button>
         </div>
 
+        {/* Edit mode toolbar */}
+        <div className="graph-edit-toolbar">
+          <div className="graph-toolbar-group">
+            <span className="toolbar-label">编辑</span>
+            <button
+              className={editMode === 'addRelated' ? 'active edit-mode' : ''}
+              onClick={() => onSetEditMode('addRelated')}
+            >
+              关联节点
+            </button>
+            <button
+              className={editMode === 'addPrerequisite' ? 'active edit-mode' : ''}
+              onClick={() => onSetEditMode('addPrerequisite')}
+            >
+              前置关系
+            </button>
+            <button className="graph-reset-layout-btn" onClick={onResetLayout}>
+              重置布局
+            </button>
+          </div>
+          {editMode !== 'none' && (
+            <span className="edit-mode-hint">
+              {linkSourceId
+                ? '点击目标节点完成连线'
+                : '点击源节点开始连线'}
+            </span>
+          )}
+        </div>
+
         {/* SVG graph area */}
         <div className="graph-svg-wrap" ref={svgWrapRef}>
           {isEmpty ? (
@@ -507,16 +653,19 @@ const KnowledgeGraphModal = memo(function KnowledgeGraphModal(
                     node.mastery.check_status === highlightMastery
                   const roleColor = ROLE_COLORS[node.role]
                   const masteryColor = MASTERY_COLORS[node.mastery.check_status]
+                  const isLinkSource = editMode !== 'none' && linkSourceId === node.id
 
                   return (
                     <g
                       key={node.id}
-                      className={`graph-node${isSelected ? ' selected' : ''}${!isHighlighted ? ' dimmed' : ''}${node.isDue ? ' due' : ''}`}
+                      className={`graph-node${isSelected ? ' selected' : ''}${!isHighlighted ? ' dimmed' : ''}${node.isDue ? ' due' : ''}${isLinkSource ? ' link-source' : ''}${editMode !== 'none' ? ' edit-active' : ''}`}
                       transform={`translate(${node.x}, ${node.y})`}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onOpenNode(node.id)
-                      }}
+                      style={{ cursor: editMode !== 'none' ? 'pointer' : 'grab' }}
+                      onPointerDown={(e) => handleNodePointerDown(e, node)}
+                      onPointerMove={handleNodePointerMove}
+                      onPointerUp={(e) => handleNodePointerUp(e, node)}
+                      onPointerCancel={() => { draggingNodeRef.current = null; dragMovedRef.current = false }}
+                      onDoubleClick={(e) => { e.stopPropagation(); handleNodeDoubleClick(node.id) }}
                       onPointerEnter={(e) => showTooltip(e, node)}
                       onPointerLeave={hideTooltip}
                     >
@@ -759,7 +908,7 @@ const KnowledgeGraphModal = memo(function KnowledgeGraphModal(
                 </span>
               ))}
             </div>
-            <div className="graph-hint">点击节点查看详情 · 滚轮缩放 · 拖拽平移</div>
+            <div className="graph-hint">点击节点查看详情 · 双击居中 · 拖拽节点重新布局 · 滚轮缩放 · 拖拽背景平移</div>
           </div>
         )}
       </div>
