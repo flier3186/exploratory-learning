@@ -410,7 +410,7 @@ const KnowledgeGraphModal = memo(function KnowledgeGraphModal(
       <div className="modal graph-modal" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="modal-header">
-          <h2>知识图谱</h2>
+          <h2>知识图谱 <span className="graph-node-count">{graphData.nodes.length} 个节点</span></h2>
           <button onClick={onClose}>关闭</button>
         </div>
 
@@ -545,6 +545,16 @@ const KnowledgeGraphModal = memo(function KnowledgeGraphModal(
                       >
                         {ROLE_META[node.role].label}
                       </text>
+                      {/* Node short title label (truncated) */}
+                      <text
+                        textAnchor="middle"
+                        dy="40"
+                        fontSize="9"
+                        fill="var(--muted, #999)"
+                        style={{ pointerEvents: 'none', userSelect: 'none' }}
+                      >
+                        {node.shortTitle.length > 8 ? node.shortTitle.slice(0, 7) + '…' : node.shortTitle}
+                      </text>
                       {/* Star indicator */}
                       {node.isStarred && (
                         <text
@@ -663,6 +673,7 @@ const KnowledgeGraphModal = memo(function KnowledgeGraphModal(
                 </span>
               ))}
             </div>
+            <div className="graph-hint">点击节点查看详情 · 滚轮缩放 · 拖拽平移</div>
           </div>
         )}
       </div>

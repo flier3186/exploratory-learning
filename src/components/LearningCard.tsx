@@ -16,10 +16,12 @@ export const LearningCard = memo(function LearningCard(props: {
   isGenerating?: boolean
   onSingleNodeQuiz?: () => void
   onOpenFeynman?: () => void
+  highlightKey?: number
 }) {
-  const { node, onToggleStar, onConfidence, onCheckStatus, onAskFollowup, onAskFollowups, onFeedback, onReplaceFollowups, onGenerate, isGenerating, onSingleNodeQuiz, onOpenFeynman } = props
+  const { node, onToggleStar, onConfidence, onCheckStatus, onAskFollowup, onAskFollowups, onFeedback, onReplaceFollowups, onGenerate, isGenerating, onSingleNodeQuiz, onOpenFeynman, highlightKey } = props
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [selectedFollowupIds, setSelectedFollowupIds] = useState<string[]>([])
+  const [isHighlighted, setIsHighlighted] = useState(false)
   const voicesRef = useRef<SpeechSynthesisVoice[]>([])
   const speakTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const masteryOptions: Array<{ value: 1 | 2 | 3 | 4 | 5; label: string }> = [
@@ -53,6 +55,14 @@ export const LearningCard = memo(function LearningCard(props: {
     setIsSpeaking(false)
     setSelectedFollowupIds([])
   }, [node.id])
+
+  // 跳转高亮：highlightKey 变化时触发闪烁动画
+  useEffect(() => {
+    if (highlightKey === undefined || highlightKey === 0) return
+    setIsHighlighted(true)
+    const timer = setTimeout(() => setIsHighlighted(false), 2000)
+    return () => clearTimeout(timer)
+  }, [highlightKey])
 
   const visibleFollowups = node.followups.slice(0, 5)
   const selectedFollowups = visibleFollowups.filter((followup) => selectedFollowupIds.includes(followup.id))
@@ -124,7 +134,7 @@ export const LearningCard = memo(function LearningCard(props: {
   }
 
   return (
-    <section className="learning-card">
+    <section className={`learning-card${isHighlighted ? ' highlight-jump' : ''}`}>
       <div className="card-head">
         <div>
           <div className="tag-row">

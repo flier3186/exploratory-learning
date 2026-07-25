@@ -76,6 +76,25 @@ export default function App() {
   const voice = useVoiceInput(gen.setQuestion, setNotice)
   const onboarding = useOnboarding()
 
+  // 跳转高亮：从路径/图谱/搜索/复习跳转后，学习卡片闪烁高亮以提供视觉反馈
+  const [cardHighlightKey, setCardHighlightKey] = useState(0)
+
+  // 统一的"跳转到节点"处理：关闭来源弹窗 → 打开节点 → 滚动 → 高亮卡片 → 通知
+  const jumpToNode = useCallback((nodeId: string, opts?: { closeModal?: () => void; source?: string }) => {
+    const { closeModal, source } = opts || {}
+    const node = app.state.nodes[nodeId]
+    if (closeModal) closeModal()
+    app.openNode(nodeId)
+    setCardHighlightKey((k) => k + 1)
+    if (node) {
+      setNotice(`已跳转到「${node.short_title}」${source ? ` · 来自${source}` : ''}`)
+    }
+    // 延迟滚动等卡片渲染完成
+    setTimeout(() => {
+      document.querySelector('.learning-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 150)
+  }, [app, setNotice])
+
   // Auto-import config from shared URL hash
   useEffect(() => {
     const config = decodeConfigFromHash()
@@ -505,6 +524,7 @@ export default function App() {
               <LearningCard
                 node={app.selectedNode}
                 isGenerating={gen.isGenerating}
+                highlightKey={cardHighlightKey}
                 onToggleStar={() => app.toggleStar(app.selectedNode!.id)}
                 onConfidence={(value) => app.setConfidence(app.selectedNode!.id, value)}
                 onCheckStatus={(status) => app.setCheckStatus(app.selectedNode!.id, status)}
@@ -562,7 +582,7 @@ export default function App() {
             onClose={() => setSearchOpen(false)}
             onSearchQueryChange={setSearchQuery}
             onRoleFilterChange={setRoleFilter}
-            onOpenNode={app.openNode}
+            onOpenNode={(nodeId: string) => jumpToNode(nodeId, { closeModal: () => setSearchOpen(false), source: '搜索' })}
           />
         )}
 
@@ -575,7 +595,7 @@ export default function App() {
             starredReviewCount={app.starredReviewCount}
             onClose={() => setReviewOpen(false)}
             onReviewFilterChange={setReviewFilter}
-            onOpenNode={app.openNode}
+            onOpenNode={(nodeId: string) => jumpToNode(nodeId, { closeModal: () => setReviewOpen(false), source: '复习' })}
             onStartQuiz={handleStartQuiz}
           />
         )}
@@ -637,7 +657,7 @@ export default function App() {
             onSetHighlightMastery={app.knowledgeGraph.setHighlightMastery}
             selectedNodeId={app.state.selectedNodeId}
             onClose={() => setGraphOpen(false)}
-            onOpenNode={(nodeId: string) => { setGraphOpen(false); app.openNode(nodeId); setTimeout(() => document.querySelector('.learning-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100) }}
+            onOpenNode={(nodeId: string) => jumpToNode(nodeId, { closeModal: () => setGraphOpen(false), source: '图谱' })}
           />
         )}
 
@@ -649,7 +669,7 @@ export default function App() {
             onSetCategoryFilter={app.learningPath.setCategoryFilter}
             categoryCounts={app.learningPath.categoryCounts}
             onClose={() => setPathOpen(false)}
-            onOpenNode={(nodeId: string) => { setPathOpen(false); app.openNode(nodeId); setTimeout(() => document.querySelector('.learning-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100) }}
+            onOpenNode={(nodeId: string) => jumpToNode(nodeId, { closeModal: () => setPathOpen(false), source: '路径' })}
           />
         )}
       </div>

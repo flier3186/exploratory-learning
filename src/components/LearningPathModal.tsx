@@ -174,13 +174,21 @@ const LearningPathModalInner = memo(function LearningPathModal({
                 (step) => categoryFilter === 'all' || step.category === categoryFilter,
               )
               .map((step, i) => (
-                <div key={step.id} className={`path-step ${step.category}`}>
+                <div
+                  key={step.id}
+                  className={`path-step ${step.category}`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onOpenNode(step.nodeId)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenNode(step.nodeId) } }}
+                >
                   <div className="path-step-head">
                     <span className="path-step-index">{i + 1}</span>
                     <span className="path-step-reason">
                       {REASON_LABELS[step.reason]}
                     </span>
                     <h4>{step.shortTitle}</h4>
+                    <span className="path-step-arrow" aria-hidden="true">→</span>
                   </div>
                   <div className="path-step-meta">
                     <span className="path-step-confidence">
@@ -199,13 +207,13 @@ const LearningPathModalInner = memo(function LearningPathModal({
                     )}
                   </div>
                   <div className="path-step-action">
-                    <button onClick={() => onOpenNode(step.nodeId)}>
+                    <span className="path-step-hint">
                       {step.category === 'review'
-                        ? '去复习'
+                        ? '点击复习此节点'
                         : step.category === 'gap'
-                          ? '去学习'
-                          : '去巩固'}
-                    </button>
+                          ? '点击学习此节点'
+                          : '点击巩固此节点'}
+                    </span>
                   </div>
                 </div>
               ))}
