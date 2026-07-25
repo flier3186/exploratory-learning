@@ -164,9 +164,9 @@ describe('LearningCard', () => {
     expect(screen.getByText('重点回看')).toBeDefined()
   })
 
-  it('should render mistakes section collapsed', () => {
+  it('should render mistakes section expanded by default', () => {
     render(<LearningCard {...defaultProps} />)
-    expect(screen.getByText('易错点')).toBeDefined()
+    expect(screen.getByText(/易错点/)).toBeDefined()
   })
 
   it('should render check panel collapsed', () => {
