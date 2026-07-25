@@ -1,5 +1,5 @@
-const CACHE_NAME = 'exploratory-learning-shell-v12'
-const CACHE_VERSION = 12
+const CACHE_NAME = 'exploratory-learning-shell-v13'
+const CACHE_VERSION = 13
 
 // 扩展 Shell 资产列表：覆盖 HTML 入口、manifest、图标、字体等关键资源
 const SHELL_ASSETS = [
