@@ -1086,3 +1086,344 @@
     border-radius: 10px;
   }
 }
+
+/* ====== P3: Weekly Report Modal ====== */
+
+.weekly-report-modal {
+  width: min(720px, 100%);
+}
+
+/* ====== P3: Growth Timeline Modal ====== */
+
+.growth-timeline-modal {
+  width: min(860px, 100%);
+}
+
+.growth-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.growth-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 8px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+}
+
+.growth-stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.growth-stat-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.growth-section {
+  margin-bottom: 18px;
+}
+
+.growth-section h3 {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+/* Milestones */
+.growth-milestones {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.growth-milestone-pill {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  opacity: 0.45;
+  transition: opacity 0.2s ease;
+}
+
+.growth-milestone-pill.reached {
+  opacity: 1;
+  border-color: rgba(255, 176, 0, 0.35);
+  background: rgba(255, 176, 0, 0.08);
+}
+
+.growth-milestone-index {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.growth-milestone-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.growth-milestone-desc {
+  font-size: 0.76rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* Timeline */
+.timeline-line {
+  position: relative;
+  padding-left: 24px;
+}
+
+.timeline-line::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--line);
+  border-radius: 1px;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 18px;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -24px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--modal-bg, #191919);
+  z-index: 1;
+}
+
+.timeline-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.timeline-date {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.timeline-day-count {
+  font-size: 0.76rem;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.timeline-nodes {
+  display: grid;
+  gap: 8px;
+}
+
+.timeline-node {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  transition: border-color 0.18s ease;
+}
+
+.timeline-node:hover {
+  border-color: rgba(255, 176, 0, 0.3);
+}
+
+.timeline-node.is-milestone {
+  border-color: rgba(255, 176, 0, 0.4);
+  background: rgba(255, 176, 0, 0.06);
+}
+
+.timeline-milestone-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed rgba(255, 176, 0, 0.2);
+}
+
+.timeline-milestone-tag {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--accent);
+  background: rgba(255, 176, 0, 0.12);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.timeline-milestone-desc {
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+
+.timeline-node-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timeline-node-order {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--faint);
+  min-width: 28px;
+}
+
+.timeline-node-title {
+  font-size: 0.92rem;
+  color: var(--text);
+  flex: 1;
+}
+
+.timeline-star {
+  color: #ffb020;
+  font-size: 0.85rem;
+}
+
+.timeline-node-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.timeline-node-topic {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.role-chip {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.check-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.check-status {
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+
+.timeline-node-confidence {
+  font-size: 0.72rem;
+  color: var(--faint);
+}
+
+/* Topic growth */
+.growth-topic-list {
+  display: grid;
+  gap: 10px;
+}
+
+.growth-topic-row {
+  display: grid;
+  gap: 4px;
+}
+
+.growth-topic-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.growth-topic-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.growth-topic-count {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.growth-topic-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.growth-topic-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  opacity: 0.7;
+  transition: width 0.3s ease;
+}
+
+.growth-topic-time {
+  display: flex;
+  gap: 12px;
+  font-size: 0.72rem;
+  color: var(--faint);
+}
+
+/* Empty state */
+.growth-empty {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.growth-empty p {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.growth-empty-hint {
+  font-size: 0.85rem !important;
+  color: var(--faint) !important;
+}
+
+/* Responsive */
+@media (max-width: 760px) {
+  .growth-overview-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .growth-milestones {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline-node-meta {
+    gap: 6px;
+  }
+}
