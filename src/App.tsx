@@ -3,6 +3,7 @@ import type { FollowupQuestion, LearningRole, ReviewFilter } from './types'
 import { useAppState } from './hooks/useAppState'
 import { useGeneration } from './hooks/useGeneration'
 import { useVoiceInput } from './hooks/useVoiceInput'
+import { useWeeklyReport } from './hooks/use-weekly-report'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { LearningCard } from './components/LearningCard'
 import { SearchModal } from './components/SearchModal'
@@ -16,7 +17,10 @@ import { QuizModal } from './components/QuizModal'
 import { FeynmanModal } from './components/FeynmanModal'
 import KnowledgeGraphModal from './components/KnowledgeGraphModal'
 import LearningPathModal from './components/LearningPathModal'
+import { WeeklyReportModal } from './components/WeeklyReportModal'
+import { GrowthTimelineModal } from './components/GrowthTimelineModal'
 import { decodeConfigFromHash, clearConfigHash, generateShareLink } from './utils'
+import { downloadAnkiExport, exportAnkiForTopic } from './utils/anki-export'
 import { profileSummaryForPrompt } from './learning-profile'
 import { isReviewDue } from './spaced-repetition'
 
@@ -41,6 +45,8 @@ export default function App() {
   const [quizOpen, setQuizOpen] = useState(false)
   const [graphOpen, setGraphOpen] = useState(false)
   const [pathOpen, setPathOpen] = useState(false)
+  const [weeklyReportOpen, setWeeklyReportOpen] = useState(false)
+  const [growthTimelineOpen, setGrowthTimelineOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 760)
   const [topicDraft, setTopicDraft] = useState('')
   const askCardRef = useRef<HTMLElement | null>(null)
@@ -75,6 +81,9 @@ export default function App() {
   const gen = useGeneration(app.state, app.selectedTopic, { addNode: app.addNode, openNode: app.openNode }, setNotice, profileSummary)
   const voice = useVoiceInput(gen.setQuestion, setNotice)
   const onboarding = useOnboarding()
+
+  // P3: 周报数据
+  const weeklyReport = useWeeklyReport(app.state.nodes, app.state.topics, app.streak.currentStreak)
 
   // 跳转高亮：从路径/图谱/搜索/复习跳转后，学习卡片闪烁高亮以提供视觉反馈
   const [cardHighlightKey, setCardHighlightKey] = useState(0)
@@ -128,6 +137,8 @@ export default function App() {
         setQuizOpen(false)
         setGraphOpen(false)
         setPathOpen(false)
+        setWeeklyReportOpen(false)
+        setGrowthTimelineOpen(false)
         app.quiz.closeSession()
         app.feynman.closeFeynman()
         return
@@ -289,6 +300,28 @@ export default function App() {
     setNotice('本地数据已清空。')
   }, [app])
 
+  // P3: Anki 导出（全部节点）
+  const handleAnkiExport = useCallback(() => {
+    const nodeList = Object.values(app.state.nodes)
+    if (nodeList.length === 0) {
+      setNotice('还没有学习节点，无法导出。')
+      return
+    }
+    downloadAnkiExport(nodeList, app.state.topics)
+    setNotice(`已导出 ${nodeList.length} 张 Anki 卡片，在 Anki 中选择「导入」即可使用。`)
+  }, [app.state.nodes, app.state.topics, setNotice])
+
+  // P3: Anki 导出（单主题）
+  const handleAnkiExportTopic = useCallback((topicId: string) => {
+    const nodeList = Object.values(app.state.nodes).filter((n) => n.topic_id === topicId)
+    if (nodeList.length === 0) {
+      setNotice('这个主题下没有节点，无法导出。')
+      return
+    }
+    exportAnkiForTopic(Object.values(app.state.nodes), app.state.topics, topicId)
+    setNotice(`已导出「${app.state.topics.find((t) => t.id === topicId)?.title || '主题'}」的 ${nodeList.length} 张 Anki 卡片。`)
+  }, [app.state.nodes, app.state.topics, setNotice])
+
   // 开始闪测：从待复习节点中选择
   const handleStartQuiz = useCallback(() => {
     const dueNodes = Object.values(app.state.nodes).filter(
@@ -388,6 +421,15 @@ export default function App() {
             {hasEnoughNodes && (
               <button className={advancedJustUnlocked ? 'feature-new' : ''} onClick={() => setStatsOpen(true)}>统计</button>
             )}
+            {hasNodes && (
+              <button onClick={() => setWeeklyReportOpen(true)}>周报</button>
+            )}
+            {hasNodes && (
+              <button onClick={() => setGrowthTimelineOpen(true)}>成长</button>
+            )}
+            {hasNodes && (
+              <button onClick={handleAnkiExport} title="导出为 Anki 可导入的文本文件">Anki</button>
+            )}
             <button onClick={() => setSettingsOpen(true)}>设置</button>
             <button className="share-btn" onClick={handleQuickShare}>分享</button>
           </div>
@@ -439,6 +481,13 @@ export default function App() {
                       <path d="M8 2v8" />
                       <path d="M4 7l4 4 4-4" />
                       <path d="M2 13h12" />
+                    </svg>
+                  </button>
+                  <button className="topic-anki-btn" title="导出为 Anki 卡片" onClick={(event) => { event.stopPropagation(); handleAnkiExportTopic(topic.id) }}>
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" width="12" height="12">
+                      <rect x="2" y="3" width="12" height="10" rx="2" />
+                      <path d="M2 7h12" />
+                      <path d="M6 10h4" />
                     </svg>
                   </button>
                   <button className="topic-delete-btn" title="删除此分类" onClick={(event) => { event.stopPropagation(); app.deleteTopic(topic.id) }}>
@@ -692,6 +741,21 @@ export default function App() {
             categoryCounts={app.learningPath.categoryCounts}
             onClose={() => setPathOpen(false)}
             onOpenNode={(nodeId: string) => jumpToNode(nodeId, { closeModal: () => setPathOpen(false), source: '路径' })}
+          />
+        )}
+
+        {weeklyReportOpen && (
+          <WeeklyReportModal
+            report={weeklyReport}
+            onClose={() => setWeeklyReportOpen(false)}
+          />
+        )}
+
+        {growthTimelineOpen && (
+          <GrowthTimelineModal
+            nodes={app.state.nodes}
+            topics={app.state.topics}
+            onClose={() => setGrowthTimelineOpen(false)}
           />
         )}
       </div>
