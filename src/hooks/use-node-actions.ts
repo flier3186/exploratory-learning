@@ -424,6 +424,50 @@ export function useNodeActions({ state, setState }: UseNodeActionsParams) {
     }))
   }, [setState, updateNode])
 
+  const toggleLink = useCallback((
+    nodeId: string,
+    otherNodeId: string,
+    linkType: 'related' | 'prerequisite',
+  ) => {
+    if (nodeId === otherNodeId) return
+    setState((current) => {
+      const node = current.nodes[nodeId]
+      const other = current.nodes[otherNodeId]
+      if (!node || !other) return current
+
+      const linkField = linkType === 'related' ? 'related_node_ids' : 'prerequisite_node_ids'
+      const exists = node.links[linkField].includes(otherNodeId)
+
+      const newNodeLinks = {
+        ...node.links,
+        [linkField]: exists
+          ? node.links[linkField].filter((id) => id !== otherNodeId)
+          : [...node.links[linkField], otherNodeId],
+      }
+
+      // For related links, update both nodes symmetrically
+      let newOtherLinks = other.links
+      if (linkType === 'related') {
+        const otherField = 'related_node_ids'
+        newOtherLinks = {
+          ...other.links,
+          [otherField]: exists
+            ? other.links[otherField].filter((id) => id !== nodeId)
+            : [...other.links[otherField], nodeId],
+        }
+      }
+
+      return {
+        ...current,
+        nodes: {
+          ...current.nodes,
+          [nodeId]: { ...node, links: newNodeLinks },
+          [otherNodeId]: { ...other, links: newOtherLinks },
+        },
+      }
+    })
+  }, [setState])
+
   return {
     selectedNode,
     selectNode,
@@ -438,5 +482,6 @@ export function useNodeActions({ state, setState }: UseNodeActionsParams) {
     setCheckStatus,
     recordFeedback,
     replaceFollowups,
+    toggleLink,
   }
 }
