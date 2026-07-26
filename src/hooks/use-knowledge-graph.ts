@@ -17,7 +17,6 @@ export function useKnowledgeGraph({ state }: { state: AppState }) {
     new Set(['child', 'related', 'prerequisite'])
   )
   const [highlightMastery, setHighlightMastery] = useState<CheckStatus | null>(null)
-  const [showCrossTopic, setShowCrossTopic] = useState(false)
 
   // Edit mode: 'none' | 'addRelated' | 'addPrerequisite'
   const [editMode, setEditMode] = useState<EditMode>('none')
@@ -64,11 +63,6 @@ export function useKnowledgeGraph({ state }: { state: AppState }) {
       }
       return next
     })
-  }, [])
-
-  // Toggle cross-topic mode
-  const toggleCrossTopic = useCallback(() => {
-    setShowCrossTopic((prev) => !prev)
   }, [])
 
   // Set edit mode
@@ -121,8 +115,6 @@ export function useKnowledgeGraph({ state }: { state: AppState }) {
     toggleEdgeType,
     highlightMastery,
     setHighlightMastery,
-    showCrossTopic,
-    toggleCrossTopic,
     // New: edit mode
     editMode,
     setEditMode: handleSetEditMode,
