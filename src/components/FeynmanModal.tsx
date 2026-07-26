@@ -24,13 +24,12 @@ export const FeynmanModal = memo(function FeynmanModal(props: {
   onReset: () => void
   onExplanationChange: (text: string) => void
   onVoiceInputStart: () => void
-  onVoiceInputStop: () => void
   onSubmit: () => void
 }) {
   const {
     isOpen, activeNode, explanation, mode,
     isSubmitting, feedback, isVoiceListening, voiceSupported,
-    onClose, onReset, onExplanationChange, onVoiceInputStart, onVoiceInputStop, onSubmit,
+    onClose, onReset, onExplanationChange, onVoiceInputStart, onSubmit,
   } = props
 
   if (!isOpen || !activeNode) return null
@@ -59,9 +58,6 @@ export const FeynmanModal = memo(function FeynmanModal(props: {
               <button
                 className={`feynman-voice-btn ${isVoiceListening ? 'active' : ''}`}
                 onPointerDown={(e) => { e.preventDefault(); onVoiceInputStart() }}
-                onPointerUp={onVoiceInputStop}
-                onPointerLeave={onVoiceInputStop}
-                onPointerCancel={onVoiceInputStop}
                 onContextMenu={(e) => e.preventDefault()}
                 disabled={isSubmitting || !voiceSupported}
                 type="button"
