@@ -761,6 +761,7 @@ export default function App() {
           isSubmitting={app.feynman.isSubmitting}
           feedback={app.feynman.feedback}
           isVoiceListening={voice.isListening}
+          voiceSupported={voice.voiceSupported}
           onClose={app.feynman.closeFeynman}
           onReset={app.feynman.resetFeynman}
           onExplanationChange={app.feynman.setExplanation}
