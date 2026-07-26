@@ -48,7 +48,36 @@ export default function App() {
   const [pathOpen, setPathOpen] = useState(false)
   const [weeklyReportOpen, setWeeklyReportOpen] = useState(false)
   const [growthTimelineOpen, setGrowthTimelineOpen] = useState(false)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 760)
+  // 移动端检测：屏幕宽度 + 触摸能力双判断，兼容报告错误 viewport 的国产浏览器
+  const [isMobileLayout, setIsMobileLayout] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.innerWidth <= 1100
+  })
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window === 'undefined') return false
+    // 屏幕窄或支持触摸 → 默认折叠 sidebar
+    const narrow = window.innerWidth <= 1100
+    const touch = navigator.maxTouchPoints > 0 || 'ontouchstart' in window
+    return narrow || (touch && window.innerWidth <= 1200)
+  })
+
+  // 监听屏幕旋转/尺寸变化，动态更新布局
+  useEffect(() => {
+    function checkLayout() {
+      const narrow = window.innerWidth <= 1100
+      setIsMobileLayout(narrow)
+      if (narrow && !sidebarCollapsed) {
+        // 小屏自动折叠
+        setSidebarCollapsed(true)
+      }
+    }
+    window.addEventListener('resize', checkLayout)
+    window.addEventListener('orientationchange', checkLayout)
+    return () => {
+      window.removeEventListener('resize', checkLayout)
+      window.removeEventListener('orientationchange', checkLayout)
+    }
+  }, [sidebarCollapsed])
   const [topicDraft, setTopicDraft] = useState('')
   const askCardRef = useRef<HTMLElement | null>(null)
   // 移动端：滚动超过一屏后显示"回到顶部"浮动按钮
@@ -380,7 +409,7 @@ export default function App() {
 
   return (
     <ErrorBoundary onExport={handleExportData}>
-      <div className="app-shell">
+      <div className={isMobileLayout ? 'app-shell mobile-layout' : 'app-shell'}>
         <aside className={sidebarCollapsed ? 'sidebar collapsed' : 'sidebar'}>
           <button className="sidebar-toggle" onClick={() => setSidebarCollapsed(!sidebarCollapsed)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
