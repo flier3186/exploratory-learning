@@ -52,6 +52,7 @@ export interface SpeechRecognitionLike {
   lang: string
   interimResults: boolean
   continuous: boolean
+  onstart: (() => void) | null
   onresult: ((event: SpeechRecognitionEventLike) => void) | null
   onend: (() => void) | null
   onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null
