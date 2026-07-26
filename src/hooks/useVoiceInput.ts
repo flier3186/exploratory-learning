@@ -37,7 +37,9 @@ interface VoskModule {
   createModel(modelUrl: string, logLevel?: number): Promise<VoskModel>
 }
 
-// 模型 URL — 同源加载，避免 CORS 问题
+// 模型 URL — 同源加载（部署时从 GitHub Release 下载到 public/models/）
+// 避免 CORS 问题：GitHub Release 资产不支持 Access-Control-Allow-Origin
+// deploy.yml 在构建时自动下载模型到 public/models/model.tar.gz
 const MODEL_URL = '/models/model.tar.gz'
 
 // 全局模型单例（避免重复加载）
