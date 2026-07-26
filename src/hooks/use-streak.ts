@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { HeatmapDay, SRSWeekDay, LearningNode } from '../types'
+import { startOfDay, DAY_MS } from '../utils'
 
-const DAY_MS = 24 * 60 * 60 * 1000
 const HEATMAP_DAYS = 84
 const SRS_WEEK_DAYS = 7
 const SRS_GRACE_MS = 4 * 3600 * 1000 // 4-hour grace period
@@ -12,12 +12,6 @@ function toDateString(ts: number): string {
   const m = String(d.getMonth() + 1).padStart(2, '0')
   const day = String(d.getDate()).padStart(2, '0')
   return `${y}-${m}-${day}`
-}
-
-function startOfDay(ts: number): number {
-  const d = new Date(ts)
-  d.setHours(0, 0, 0, 0)
-  return d.getTime()
 }
 
 function computeLevel(count: number): 0 | 1 | 2 | 3 | 4 {
