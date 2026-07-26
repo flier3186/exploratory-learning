@@ -6,13 +6,14 @@ import type { SpeechRecognitionLike } from '../types'
  *
  * 核心设计：
  * 1. 按下 → startInput：同步触发震动 + 乐观设为 listening 状态
- * 2. 松开 → stopInput：同步重置状态 + 触发震动，不依赖 onend 回调
- * 3. onend/onerror 仅作为兜底清理，不作为主要状态更新路径
+ *    同时在 document 上添加 pointerup/pointercancel 监听器
+ *    （不在按钮上用 onPointerLeave，因为 CSS transform 会导致按钮边界变化，
+ *     在移动端引发 pointerleave 误触发，造成"按住说话/松开结束"循环）
+ * 2. 松开 → stopInput（由 document 级 pointerup 触发）：同步重置状态 + 移除监听器
+ * 3. onend/onerror 仅作为兜底清理
  * 4. 运行时超时检测：start() 后 2.5 秒内无 onstart/onresult → 判定不支持
- *    解决部分国产浏览器（Alook/小米）API 存在但实际不工作的问题
- *
- * 这样即使 onend 从不触发（微信内置浏览器等环境），
- * 松开按钮后 UI 也能立即恢复正常。
+ * 5. 失败计数：松开后如果识别器从未启动（confirmedRef=false），累计失败次数
+ *    2 次后主动提示浏览器可能不支持，避免用户反复无效尝试
  */
 
 /** 触发震动反馈（静默失败，不支持的平台自动跳过） */
@@ -26,8 +27,14 @@ function haptic(pattern: number | number[]) {
   }
 }
 
-/** 运行时检测超时时间（毫秒） */
+/** 运行时检测超时时间（毫秒）：start() 后多久没 onstart → 判定不支持 */
 const START_TIMEOUT_MS = 2500
+
+/** 结果超时时间（毫秒）：onstart 后多久没 onresult → 判定语音服务被墙 */
+const RESULT_TIMEOUT_MS = 6000
+
+/** 连续失败几次后提示浏览器可能不支持 */
+const MAX_FAILED_ATTEMPTS = 2
 
 export function useVoiceInput(
   onTranscript: (text: string) => void,
@@ -39,13 +46,16 @@ export function useVoiceInput(
   const speechBaseRef = useRef('')
   const finalTranscriptRef = useRef('')
   const interimRef = useRef('')
-  // 关键：用 ref 跟踪 listening 状态，避免 state 异步更新导致的竞态
-  // 场景：快速松开→按下时，state 还没更新，startInput 闭包读到旧值导致第二次按下被忽略
+  // 用 ref 跟踪 listening 状态，避免 state 异步更新导致的竞态
   const isListeningRef = useRef(false)
   // 运行时超时检测定时器
   const startTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   // 标记是否已确认识别器真正启动（onstart 或 onresult 已触发）
   const confirmedRef = useRef(false)
+  // 连续失败次数：松开时 confirmedRef 为 false 则 +1，成功识别时重置为 0
+  const failedAttemptsRef = useRef(0)
+  // document 级 pointerup 处理函数引用（用于添加/移除监听器）
+  const docPointerUpHandlerRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     setVoiceSupported(Boolean(window.SpeechRecognition || window.webkitSpeechRecognition))
@@ -54,6 +64,12 @@ export function useVoiceInput(
       recognitionRef.current = null
       isListeningRef.current = false
       if (startTimeoutRef.current) clearTimeout(startTimeoutRef.current)
+      // 清理 document 级监听器
+      if (docPointerUpHandlerRef.current) {
+        document.removeEventListener('pointerup', docPointerUpHandlerRef.current)
+        document.removeEventListener('pointercancel', docPointerUpHandlerRef.current)
+        docPointerUpHandlerRef.current = null
+      }
     }
   }, [])
 
@@ -64,6 +80,51 @@ export function useVoiceInput(
       startTimeoutRef.current = null
     }
   }, [])
+
+  /** 停止语音识别（松开按钮时调用） */
+  const stopInput = useCallback(() => {
+    // 清除超时检测
+    clearStartTimeout()
+    // 同步立即重置状态 + 震动
+    haptic([20, 40, 20])
+    isListeningRef.current = false
+    setIsListening(false)
+
+    // 移除 document 级 pointerup 监听器
+    if (docPointerUpHandlerRef.current) {
+      document.removeEventListener('pointerup', docPointerUpHandlerRef.current)
+      document.removeEventListener('pointercancel', docPointerUpHandlerRef.current)
+      docPointerUpHandlerRef.current = null
+    }
+
+    // 写入最终文本：优先 final，fallback 到 interim
+    const textToCommit = finalTranscriptRef.current || interimRef.current
+    if (textToCommit) {
+      const MAX_LENGTH = 500
+      const raw = `${speechBaseRef.current}${textToCommit}`.trimStart()
+      const combined = raw.length > MAX_LENGTH ? raw.slice(0, MAX_LENGTH) : raw
+      onTranscript(combined)
+    }
+
+    // 失败计数：如果识别器从未真正启动，累计失败次数
+    if (!confirmedRef.current) {
+      failedAttemptsRef.current += 1
+      if (failedAttemptsRef.current >= MAX_FAILED_ATTEMPTS) {
+        setVoiceSupported(false)
+        onNotice('语音识别似乎无法在此浏览器上工作。建议使用 Chrome 浏览器，或直接手动输入。')
+      }
+    } else {
+      // 成功过则重置计数
+      failedAttemptsRef.current = 0
+    }
+
+    // 停止识别器
+    const recog = recognitionRef.current
+    recognitionRef.current = null
+    if (recog) {
+      try { recog.stop() } catch { /* 已停止，忽略 */ }
+    }
+  }, [onTranscript, clearStartTimeout, onNotice])
 
   /** 开始语音识别（按下按钮时调用） */
   const startInput = useCallback((currentText: string) => {
@@ -86,10 +147,30 @@ export function useVoiceInput(
     recognition.interimResults = true
     recognition.continuous = true
 
-    // onstart：确认识别器真正启动，清除超时检测
+    // onstart：确认识别器真正启动，切换到结果超时检测
     recognition.onstart = () => {
       confirmedRef.current = true
       clearStartTimeout()
+      // onstart 已触发，但可能因 Google 语音服务被墙而永远不返回 onresult
+      // 启动结果超时检测：6 秒内无 onresult → 判定服务不可用
+      startTimeoutRef.current = setTimeout(() => {
+        if (isListeningRef.current && confirmedRef.current) {
+          isListeningRef.current = false
+          setIsListening(false)
+          setVoiceSupported(false)
+          if (docPointerUpHandlerRef.current) {
+            document.removeEventListener('pointerup', docPointerUpHandlerRef.current)
+            document.removeEventListener('pointercancel', docPointerUpHandlerRef.current)
+            docPointerUpHandlerRef.current = null
+          }
+          const recog = recognitionRef.current
+          recognitionRef.current = null
+          if (recog) {
+            try { recog.stop() } catch { /* ignore */ }
+          }
+          onNotice('语音识别服务不可用（可能需要科学上网访问 Google 语音服务）。建议使用 Chrome 浏览器或直接手动输入。')
+        }
+      }, RESULT_TIMEOUT_MS)
     }
 
     recognition.onresult = (event) => {
@@ -117,11 +198,16 @@ export function useVoiceInput(
       clearStartTimeout()
       const errorType = event.error || 'unknown'
       if (errorType === 'no-speech' || errorType === 'aborted') return
-      // 关键：error 后同步重置状态，避免 UI 卡在"松开结束"
+      // error 后同步重置状态
       isListeningRef.current = false
       setIsListening(false)
+      // 移除 document 级监听器
+      if (docPointerUpHandlerRef.current) {
+        document.removeEventListener('pointerup', docPointerUpHandlerRef.current)
+        document.removeEventListener('pointercancel', docPointerUpHandlerRef.current)
+        docPointerUpHandlerRef.current = null
+      }
       if (errorType === 'not-allowed' || errorType === 'service-not-allowed') {
-        // 权限被拒：标记该浏览器不支持，避免用户反复尝试
         setVoiceSupported(false)
         onNotice('麦克风权限被拒绝了。请在浏览器设置里允许使用麦克风，或直接手动输入。')
       } else if (errorType === 'network') {
@@ -133,13 +219,12 @@ export function useVoiceInput(
       }
     }
 
-    // onend 做兜底清理：如果识别器自行结束但状态还没重置，在此修正
+    // onend 兜底清理
     recognition.onend = () => {
       clearStartTimeout()
       if (recognitionRef.current === recognition) {
         recognitionRef.current = null
       }
-      // 兜底：识别器自行结束（超时/错误后）但用户还按着按钮，重置 UI 状态
       if (isListeningRef.current) {
         isListeningRef.current = false
         setIsListening(false)
@@ -150,29 +235,39 @@ export function useVoiceInput(
     try {
       recognition.start()
     } catch {
-      // start() 失败时，清理状态，不要让 UI 卡在 listening
       recognitionRef.current = null
       isListeningRef.current = false
       setIsListening(false)
       return
     }
 
-    // 关键：同步立即触发震动 + 设为 listening
-    // 不等 onstart 回调（很多浏览器不触发 onstart，或延迟严重）
+    // 同步立即触发震动 + 设为 listening
     haptic(30)
     isListeningRef.current = true
     setIsListening(true)
 
-    // 运行时超时检测：start() 后一段时间内无 onstart/onresult/onerror
-    // 说明该浏览器虽然 API 存在但实际不工作（常见于国产 Android 浏览器）
+    // 在 document 上添加 pointerup/pointercancel 监听器
+    // 这样手指滑出按钮也能正确触发停止
+    // 不用 onPointerLeave 是因为 CSS transform: scale 会改变按钮边界
+    // 导致移动端 pointerleave 误触发，造成 UI 循环
+    docPointerUpHandlerRef.current = stopInput
+    document.addEventListener('pointerup', stopInput)
+    document.addEventListener('pointercancel', stopInput)
+
+    // 运行时超时检测
     clearStartTimeout()
     startTimeoutRef.current = setTimeout(() => {
       if (!confirmedRef.current && isListeningRef.current) {
-        // 识别器从未真正启动 → 标记不支持，降级为手动输入
+        // 识别器从未真正启动 → 标记不支持
         isListeningRef.current = false
         setIsListening(false)
         setVoiceSupported(false)
-        // 停止识别器
+        // 移除 document 级监听器
+        if (docPointerUpHandlerRef.current) {
+          document.removeEventListener('pointerup', docPointerUpHandlerRef.current)
+          document.removeEventListener('pointercancel', docPointerUpHandlerRef.current)
+          docPointerUpHandlerRef.current = null
+        }
         const recog = recognitionRef.current
         recognitionRef.current = null
         if (recog) {
@@ -181,34 +276,7 @@ export function useVoiceInput(
         onNotice('该浏览器不支持语音输入，建议使用 Chrome 浏览器或直接手动输入。')
       }
     }, START_TIMEOUT_MS)
-  }, [onTranscript, onNotice, clearStartTimeout])
-
-  /** 停止语音识别（松开按钮时调用） */
-  const stopInput = useCallback(() => {
-    // 清除超时检测
-    clearStartTimeout()
-    // 关键：同步立即重置状态 + 震动
-    // 不依赖 onend 回调（很多环境 onend 不触发，导致 UI 卡死）
-    haptic([20, 40, 20])
-    isListeningRef.current = false
-    setIsListening(false)
-
-    // 写入最终文本：优先 final，fallback 到 interim（用户说完立即松开时 final 可能还没生成）
-    const textToCommit = finalTranscriptRef.current || interimRef.current
-    if (textToCommit) {
-      const MAX_LENGTH = 500
-      const raw = `${speechBaseRef.current}${textToCommit}`.trimStart()
-      const combined = raw.length > MAX_LENGTH ? raw.slice(0, MAX_LENGTH) : raw
-      onTranscript(combined)
-    }
-
-    // 停止识别器
-    const recog = recognitionRef.current
-    recognitionRef.current = null
-    if (recog) {
-      try { recog.stop() } catch { /* 已停止，忽略 */ }
-    }
-  }, [onTranscript, clearStartTimeout])
+  }, [onTranscript, onNotice, clearStartTimeout, stopInput])
 
   return { isListening, voiceSupported, startInput, stopInput }
 }
