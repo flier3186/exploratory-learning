@@ -162,3 +162,60 @@ export function sanitizeChecks(items: Array<Partial<UnderstandingCheck>> | undef
 
   return [...normalized, ...defaults].slice(0, 3)
 }
+
+// ===== 共享工具函数（消除重复代码） =====
+
+/** 一天的毫秒数 */
+export const DAY_MS = 86_400_000
+
+/**
+ * 获取时间戳所在天的 00:00:00 时间戳
+ * 统一从 utils 引入，避免在多个文件中重复定义
+ */
+export function startOfDay(ts: number): number {
+  const d = new Date(ts)
+  d.setHours(0, 0, 0, 0)
+  return d.getTime()
+}
+
+/**
+ * 复制文本到剪贴板，带三级降级策略：
+ * 1. Clipboard API（现代浏览器）
+ * 2. execCommand('copy')（兼容旧浏览器/非安全上下文）
+ * 3. Web Share API（移动端原生分享面板）
+ * @returns true 表示成功复制或分享，false 表示全部失败
+ */
+export async function copyToClipboard(text: string, shareTitle = '探索式学习'): Promise<boolean> {
+  // 1. 标准 Clipboard API
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text)
+      return true
+    } catch { /* 降级 */ }
+  }
+
+  // 2. execCommand 降级
+  try {
+    const textarea = document.createElement('textarea')
+    textarea.value = text
+    textarea.style.position = 'fixed'
+    textarea.style.left = '-9999px'
+    textarea.style.top = '0'
+    document.body.appendChild(textarea)
+    textarea.focus()
+    textarea.select()
+    const ok = document.execCommand('copy')
+    document.body.removeChild(textarea)
+    if (ok) return true
+  } catch { /* 降级 */ }
+
+  // 3. Web Share API（移动端原生分享）
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: shareTitle, text })
+      return true
+    } catch { /* 用户取消 */ }
+  }
+
+  return false
+}
