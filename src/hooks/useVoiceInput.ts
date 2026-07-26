@@ -1,23 +1,48 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 /**
- * 语音输入 Hook（push-to-talk + MediaRecorder + AI API 转录）
+ * 语音输入 Hook（push-to-talk + Vosk 离线语音识别）
  *
- * 核心改进：不依赖 Web Speech API（Google 服务被墙），不依赖 Vosk（42MB 模型下载太慢）
- * 方案：用 MediaRecorder 录音 → 发送到用户已配置的 AI API /audio/transcriptions 端点转录
+ * 核心方案：使用 vosk-browser (WebAssembly) 在浏览器内离线识别语音
+ * - 不依赖 Web Speech API（Google 服务被墙）
+ * - 不依赖 AI API 的音频转写端点（DeepSeek 等不支持）
+ * - 首次使用需下载 ~42MB 中文模型，之后浏览器缓存
  *
  * UX 流程：
- * 1. 按下 → 开始录音（显示"正在录音..."）
- * 2. 松开 → 停止录音 → 发送到 API 转录（显示"正在转写..."）
- * 3. 转录成功 → 文本填入输入框
- * 4. 转录失败 → 提示用户（API 不支持音频或网络错误）
- *
- * 此方案在所有支持 MediaRecorder 的浏览器上工作（包括国产浏览器 Alook/小米等）
+ * 1. 首次按下 → 提示"正在加载语音模型..." → 下载模型（约42MB，仅一次）
+ * 2. 模型加载完成 → 开始录音识别（显示"正在聆听..."）
+ * 3. 松开 → 停止录音 → 输出识别文本
+ * 4. 后续按下 → 直接开始录音（模型已缓存）
  */
 
-// ---------------------------------------------------------------------------
-// 辅助函数
-// ---------------------------------------------------------------------------
+// vosk-browser 的类型声明（库自带 .d.ts，但导入方式特殊）
+// 我们用动态导入避免打包问题
+interface VoskModel {
+  ready: boolean
+  terminate(): void
+  setLogLevel(level: number): void
+  KaldiRecognizer: new (sampleRate: number, grammar?: string) => VoskRecognizer
+}
+
+interface VoskRecognizer {
+  id: string
+  on(event: 'result', listener: (message: { event: 'result'; result: { text: string } }) => void): void
+  on(event: 'partialresult', listener: (message: { event: 'partialresult'; result: { partial: string } }) => void): void
+  acceptWaveform(buffer: AudioBuffer): void
+  setWords(words: boolean): void
+  remove(): void
+}
+
+interface VoskModule {
+  createModel(modelUrl: string, logLevel?: number): Promise<VoskModel>
+}
+
+// 模型 URL — 同源加载，避免 CORS 问题
+const MODEL_URL = '/models/model.tar.gz'
+
+// 全局模型单例（避免重复加载）
+let globalModel: VoskModel | null = null
+let globalModelLoading: Promise<VoskModel> | null = null
 
 /** 触发震动反馈 */
 function haptic(pattern: number | number[]) {
@@ -36,85 +61,74 @@ function checkBrowserSupport(): boolean {
     typeof navigator !== 'undefined' &&
     typeof navigator.mediaDevices !== 'undefined' &&
     typeof navigator.mediaDevices.getUserMedia === 'function'
-  const hasMediaRecorder = typeof MediaRecorder !== 'undefined'
-  return hasMediaDevices && hasMediaRecorder
+  const hasAudioContext =
+    typeof window !== 'undefined' &&
+    (typeof AudioContext !== 'undefined' || typeof (window as unknown as { webkitAudioContext?: unknown }).webkitAudioContext !== 'undefined')
+  return hasMediaDevices && hasAudioContext
 }
 
-/**
- * 将 chat/completions URL 转换为 audio/transcriptions URL
- * 例: https://api.groq.com/openai/v1/chat/completions → https://api.groq.com/openai/v1/audio/transcriptions
- */
-function deriveSttUrl(apiBase: string): string {
-  if (!apiBase) return ''
-  // 替换 /chat/completions 为 /audio/transcriptions
-  if (apiBase.includes('/chat/completions')) {
-    return apiBase.replace('/chat/completions', '/audio/transcriptions')
+/** 获取 AudioContext 构造器（兼容 webkit 前缀） */
+function getAudioContextClass(): typeof AudioContext | null {
+  if (typeof AudioContext !== 'undefined') return AudioContext
+  if (typeof window !== 'undefined' && typeof (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext !== 'undefined') {
+    return (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
   }
-  // 如果 URL 以 /结尾，去掉斜杠
-  const base = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase
-  // 如果 URL 以 /v1 结尾，追加 /audio/transcriptions
-  if (base.endsWith('/v1')) {
-    return `${base}/audio/transcriptions`
-  }
-  // 兜底：直接追加
-  return `${base}/audio/transcriptions`
+  return null
 }
 
-/**
- * 调用 AI API 进行语音转文字
- * 使用 OpenAI 兼容的 /audio/transcriptions 端点
- */
-async function transcribeAudio(
-  audioBlob: Blob,
-  apiBase: string,
-  apiKey: string,
-): Promise<string> {
-  const sttUrl = deriveSttUrl(apiBase)
+/** 加载 Vosk 模型（单例模式，避免重复下载） */
+async function loadVoskModel(
+  onProgress?: (msg: string) => void,
+): Promise<VoskModel> {
+  // 如果模型已加载，直接返回
+  if (globalModel) {
+    return globalModel
+  }
 
-  const formData = new FormData()
-  // 根据浏览器支持的格式选择 MIME 类型
-  const mimeType = audioBlob.type || 'audio/webm'
-  const ext = mimeType.includes('webm') ? 'webm' : mimeType.includes('mp4') ? 'mp4' : 'webm'
-  formData.append('file', audioBlob, `recording.${ext}`)
-  // 使用 whisper-1 作为默认模型名（OpenAI 兼容格式）
-  formData.append('model', 'whisper-1')
-  formData.append('language', 'zh')
-  formData.append('response_format', 'json')
+  // 如果正在加载，等待已有 Promise
+  if (globalModelLoading) {
+    return globalModelLoading
+  }
 
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 30_000)
+  // 开始加载
+  globalModelLoading = (async () => {
+    onProgress?.('正在加载语音识别模型（约42MB，首次加载需要一些时间）...')
+
+    // 动态导入 vosk-browser
+    const Vosk = (await import('vosk-browser')) as unknown as VoskModule
+
+    // 创建模型
+    const model = await Vosk.createModel(MODEL_URL, -1) // -1 = Warning log level
+
+    // 等待模型就绪
+    if (!model.ready) {
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('模型加载超时'))
+        }, 120_000) // 2分钟超时
+
+        // 轮询检查模型就绪状态
+        const checkReady = setInterval(() => {
+          if (model.ready) {
+            clearTimeout(timeout)
+            clearInterval(checkReady)
+            resolve()
+          }
+        }, 500)
+      })
+    }
+
+    globalModel = model
+    onProgress?.('语音模型加载完成')
+    return model
+  })()
 
   try {
-    const response = await fetch(sttUrl, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: formData,
-      signal: controller.signal,
-    })
-
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => '')
-      if (response.status === 404) {
-        throw new Error('STT_NOT_SUPPORTED')
-      }
-      throw new Error(`API 返回 ${response.status}: ${errorText.slice(0, 200)}`)
-    }
-
-    const result = await response.json()
-    const text = result.text || result.transcript || ''
-    if (!text) {
-      throw new Error('API 返回了空结果')
-    }
-    return text.trim()
+    return await globalModelLoading
   } catch (err) {
-    if (err instanceof DOMException && err.name === 'AbortError') {
-      throw new Error('语音转写超时，请缩短录音时长后重试')
-    }
+    // 加载失败，清除状态以便重试
+    globalModelLoading = null
     throw err
-  } finally {
-    clearTimeout(timer)
   }
 }
 
@@ -122,32 +136,26 @@ async function transcribeAudio(
 // Hook
 // ---------------------------------------------------------------------------
 
-export type VoiceStatus = 'idle' | 'recording' | 'transcribing' | 'error'
+export type VoiceStatus = 'idle' | 'loading-model' | 'recording' | 'error'
 
 export function useVoiceInput(
   onTranscript: (text: string) => void,
   onNotice: (msg: string) => void,
-  apiConfig?: { apiBase: string; apiKey: string; model: string },
 ) {
   const [isListening, setIsListening] = useState(false)
-  const [isTranscribing, setIsTranscribing] = useState(false)
+  const [isModelLoading, setIsModelLoading] = useState(false)
   const [voiceSupported, setVoiceSupported] = useState(true)
 
   // Refs
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-  const audioChunksRef = useRef<Blob[]>([])
+  const modelRef = useRef<VoskModel | null>(null)
+  const recognizerRef = useRef<VoskRecognizer | null>(null)
+  const audioContextRef = useRef<AudioContext | null>(null)
   const mediaStreamRef = useRef<MediaStream | null>(null)
+  const scriptProcessorRef = useRef<ScriptProcessorNode | null>(null)
   const isListeningRef = useRef(false)
   const speechBaseRef = useRef('')
+  const finalTextRef = useRef('')
   const docPointerUpHandlerRef = useRef<(() => void) | null>(null)
-  // 标记是否真正开始录音（权限获取成功后）
-  const recordingStartedRef = useRef(false)
-  // 保存最新的 API 配置（避免闭包陷阱）
-  const apiConfigRef = useRef(apiConfig)
-
-  useEffect(() => {
-    apiConfigRef.current = apiConfig
-  }, [apiConfig])
 
   // 初始检测浏览器支持
   useEffect(() => {
@@ -167,24 +175,42 @@ export function useVoiceInput(
 
   /** 清理录音资源 */
   const cleanupRecording = useCallback(() => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+    // 停止 ScriptProcessor
+    if (scriptProcessorRef.current) {
       try {
-        mediaRecorderRef.current.ondataavailable = null
-        mediaRecorderRef.current.onstop = null
-        mediaRecorderRef.current.stop()
+        scriptProcessorRef.current.onaudioprocess = null
+        scriptProcessorRef.current.disconnect()
       } catch { /* ignore */ }
+      scriptProcessorRef.current = null
     }
-    mediaRecorderRef.current = null
 
+    // 停止媒体流
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getTracks().forEach(t => t.stop())
       mediaStreamRef.current = null
     }
-    audioChunksRef.current = []
+
+    // 关闭 AudioContext
+    if (audioContextRef.current) {
+      try {
+        if (audioContextRef.current.state !== 'closed') {
+          audioContextRef.current.close()
+        }
+      } catch { /* ignore */ }
+      audioContextRef.current = null
+    }
+
+    // 移除识别器（保留模型供下次使用）
+    if (recognizerRef.current) {
+      try {
+        recognizerRef.current.remove()
+      } catch { /* ignore */ }
+      recognizerRef.current = null
+    }
   }, [])
 
-  /** 停止录音并转录 */
-  const stopAndTranscribe = useCallback(async () => {
+  /** 停止录音并输出结果 */
+  const stopRecording = useCallback(() => {
     // 同步立即重置状态 + 震动
     haptic([20, 40, 20])
     isListeningRef.current = false
@@ -197,182 +223,181 @@ export function useVoiceInput(
       docPointerUpHandlerRef.current = null
     }
 
-    // 只有在真正开始录音后才进行转录
-    if (!recordingStartedRef.current) {
-      cleanupRecording()
-      return
-    }
-    recordingStartedRef.current = false
+    // 获取最终文本
+    const text = finalTextRef.current.trim()
 
-    // 收集录音数据
-    const recorder = mediaRecorderRef.current
-    if (!recorder || recorder.state === 'inactive') {
-      cleanupRecording()
-      return
-    }
+    // 清理资源
+    cleanupRecording()
 
-    // 使用 Promise 包装 recorder.onstop
-    const audioBlob = await new Promise<Blob | null>((resolve) => {
-      recorder.onstop = () => {
-        const chunks = audioChunksRef.current
-        if (chunks.length === 0) {
-          resolve(null)
-          return
-        }
-        const blob = new Blob(chunks, { type: chunks[0]?.type || 'audio/webm' })
-        resolve(blob)
-      }
-      try {
-        recorder.stop()
-      } catch {
-        resolve(null)
-      }
-    })
-
-    // 停止媒体流
-    if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach(t => t.stop())
-      mediaStreamRef.current = null
-    }
-
-    if (!audioBlob || audioBlob.size < 100) {
-      // 录音太短，忽略
-      cleanupRecording()
-      return
-    }
-
-    // 检查 API 配置
-    const config = apiConfigRef.current
-    if (!config?.apiKey?.trim()) {
-      cleanupRecording()
-      onNotice('语音转文字需要 API Key。请先在设置中配置 API。')
-      return
-    }
-
-    // 开始转录
-    setIsTranscribing(true)
-    try {
-      const text = await transcribeAudio(
-        audioBlob,
-        config.apiBase,
-        config.apiKey.trim(),
-      )
+    // 输出识别结果
+    if (text) {
       const MAX_LENGTH = 500
       const raw = `${speechBaseRef.current}${text}`.trimStart()
       const combined = raw.length > MAX_LENGTH ? raw.slice(0, MAX_LENGTH) : raw
       onTranscript(combined)
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : String(err)
-      if (errorMsg === 'STT_NOT_SUPPORTED') {
-        onNotice('当前 API 不支持语音转文字。建议使用 Groq API（免费），或在输入框中使用键盘的语音输入。')
-      } else {
-        onNotice(`语音转写失败：${errorMsg}。可以重试或直接手动输入。`)
-      }
-    } finally {
-      setIsTranscribing(false)
-      cleanupRecording()
     }
-  }, [onTranscript, onNotice, cleanupRecording])
 
-  /** 开始录音（按下按钮时调用） */
-  const startInput = useCallback((currentText: string) => {
-    // 防止重复触发
-    if (isListeningRef.current || isTranscribing) return
-    if (!voiceSupported) {
-      onNotice('当前浏览器不支持语音录音。请直接手动输入，或在输入框中使用键盘的语音输入。')
-      return
-    }
+    finalTextRef.current = ''
+  }, [onTranscript, cleanupRecording])
+
+  /** 开始录音识别 */
+  const startRecording = useCallback(async (currentText: string) => {
+    if (isListeningRef.current) return
 
     speechBaseRef.current = currentText.trim() ? `${currentText.trim()}\n` : ''
-    audioChunksRef.current = []
-    recordingStartedRef.current = false
+    finalTextRef.current = ''
 
     // 添加 document 级 pointerup 监听器
-    const handler = () => { void stopAndTranscribe() }
+    const handler = () => { stopRecording() }
     docPointerUpHandlerRef.current = handler
     document.addEventListener('pointerup', handler)
     document.addEventListener('pointercancel', handler)
 
-    // 异步获取麦克风权限并开始录音
-    navigator.mediaDevices
-      .getUserMedia({
+    try {
+      // 1. 加载模型（如果尚未加载）
+      if (!modelRef.current) {
+        setIsModelLoading(true)
+        modelRef.current = await loadVoskModel((msg) => {
+          onNotice(msg)
+        })
+        setIsModelLoading(false)
+      }
+
+      // 如果在加载模型期间用户已经松开了按钮，直接返回
+      if (!isListeningRef.current) {
+        return
+      }
+
+      const model = modelRef.current
+
+      // 2. 获取麦克风权限
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: false,
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           channelCount: 1,
+          sampleRate: 16000,
         },
       })
-      .then((stream) => {
-        mediaStreamRef.current = stream
+      mediaStreamRef.current = mediaStream
 
-        // 选择支持的 MIME 类型
-        const mimeTypes = [
-          'audio/webm;codecs=opus',
-          'audio/webm',
-          'audio/mp4',
-          'audio/ogg;codecs=opus',
-        ]
-        let mimeType = ''
-        for (const type of mimeTypes) {
-          if (MediaRecorder.isTypeSupported(type)) {
-            mimeType = type
-            break
-          }
-        }
+      // 如果在获取权限期间用户已经松开了按钮，清理并返回
+      if (!isListeningRef.current) {
+        mediaStream.getTracks().forEach(t => t.stop())
+        mediaStreamRef.current = null
+        return
+      }
 
-        const recorder = mimeType
-          ? new MediaRecorder(stream, { mimeType })
-          : new MediaRecorder(stream)
+      // 3. 创建 AudioContext
+      const AudioCtxClass = getAudioContextClass()
+      if (!AudioCtxClass) {
+        throw new Error('浏览器不支持 AudioContext')
+      }
+      const audioContext = new AudioCtxClass({ sampleRate: 16000 })
+      audioContextRef.current = audioContext
 
-        mediaRecorderRef.current = recorder
+      // 4. 创建识别器
+      const recognizer = new model.KaldiRecognizer(16000)
+      recognizerRef.current = recognizer
 
-        recorder.ondataavailable = (event) => {
-          if (event.data && event.data.size > 0) {
-            audioChunksRef.current.push(event.data)
-          }
-        }
-
-        recorder.onerror = (event) => {
-          console.error('[MediaRecorder] error:', event)
-        }
-
-        recorder.start()
-        recordingStartedRef.current = true
-        isListeningRef.current = true
-        setIsListening(true)
-        haptic(30)
-      })
-      .catch((err) => {
-        console.error('[VoiceInput] getUserMedia failed:', err)
-        // 移除监听器
-        if (docPointerUpHandlerRef.current) {
-          document.removeEventListener('pointerup', docPointerUpHandlerRef.current)
-          document.removeEventListener('pointercancel', docPointerUpHandlerRef.current)
-          docPointerUpHandlerRef.current = null
-        }
-        isListeningRef.current = false
-        setIsListening(false)
-
-        const errorMsg = err instanceof Error ? err.message : String(err)
-        if (errorMsg.includes('Permission') || errorMsg.includes('denied') || errorMsg.includes('NotAllowed')) {
-          onNotice('麦克风权限被拒绝了。请在浏览器设置里允许使用麦克风。')
-        } else if (errorMsg.includes('NotFound') || errorMsg.includes('DevicesNotFoundError')) {
-          onNotice('未检测到麦克风设备。请检查设备连接。')
-        } else {
-          onNotice('无法启动录音，可以重试或直接手动输入。')
+      recognizer.on('result', (message) => {
+        const text = message.result.text
+        if (text) {
+          finalTextRef.current = text
         }
       })
-  }, [voiceSupported, isTranscribing, onNotice, stopAndTranscribe])
+
+      recognizer.on('partialresult', (message) => {
+        // 部分结果可以用于实时显示，但为了简化，我们只在最终结果时输出
+        // 如果有部分结果，更新 finalTextRef 以防最终结果丢失
+        const partial = message.result.partial
+        if (partial) {
+          // 保留部分结果作为兜底（有些情况下 result 事件可能不触发）
+          finalTextRef.current = partial
+        }
+      })
+
+      // 5. 设置音频处理管线
+      const source = audioContext.createMediaStreamSource(mediaStream)
+      // ScriptProcessorNode 虽然已废弃，但在所有浏览器上仍然可用
+      // AudioWorklet 更现代但兼容性较差，这里优先兼容性
+      const scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1)
+      scriptProcessorRef.current = scriptProcessor
+
+      scriptProcessor.onaudioprocess = (event) => {
+        try {
+          if (recognizerRef.current && isListeningRef.current) {
+            recognizerRef.current.acceptWaveform(event.inputBuffer)
+          }
+        } catch (err) {
+          console.error('[Vosk] acceptWaveform failed:', err)
+        }
+      }
+
+      // 连接音频管线
+      source.connect(scriptProcessor)
+      // ScriptProcessorNode 需要连接到 destination 才能工作（即使不输出声音）
+      // 但我们不希望输出到扬声器，所以用 gain=0 的 GainNode 中转
+      const silentGain = audioContext.createGain()
+      silentGain.gain.value = 0
+      scriptProcessor.connect(silentGain)
+      silentGain.connect(audioContext.destination)
+
+      // 6. 开始识别
+      isListeningRef.current = true
+      setIsListening(true)
+      haptic(30)
+
+    } catch (err) {
+      console.error('[VoiceInput] startRecording failed:', err)
+      setIsModelLoading(false)
+      isListeningRef.current = false
+      setIsListening(false)
+
+      // 移除监听器
+      if (docPointerUpHandlerRef.current) {
+        document.removeEventListener('pointerup', docPointerUpHandlerRef.current)
+        document.removeEventListener('pointercancel', docPointerUpHandlerRef.current)
+        docPointerUpHandlerRef.current = null
+      }
+
+      cleanupRecording()
+
+      const errorMsg = err instanceof Error ? err.message : String(err)
+      if (errorMsg.includes('Permission') || errorMsg.includes('denied') || errorMsg.includes('NotAllowed')) {
+        onNotice('麦克风权限被拒绝了。请在浏览器设置里允许使用麦克风。')
+      } else if (errorMsg.includes('NotFound') || errorMsg.includes('DevicesNotFoundError')) {
+        onNotice('未检测到麦克风设备。请检查设备连接。')
+      } else if (errorMsg.includes('模型加载超时') || errorMsg.includes('模型')) {
+        onNotice(`语音模型加载失败：${errorMsg}。请检查网络连接后重试。`)
+      } else {
+        onNotice(`无法启动语音识别：${errorMsg}。可以重试或直接手动输入。`)
+      }
+    }
+  }, [onNotice, stopRecording, cleanupRecording])
+
+  /** 开始语音输入（按下按钮时调用） */
+  const startInput = useCallback((currentText: string) => {
+    // 防止重复触发
+    if (isListeningRef.current || isModelLoading) return
+    if (!voiceSupported) {
+      onNotice('当前浏览器不支持语音录音。请直接手动输入，或在输入框中使用键盘的语音输入。')
+      return
+    }
+
+    // 异步开始录音
+    void startRecording(currentText)
+  }, [voiceSupported, isModelLoading, onNotice, startRecording])
 
   /** 手动停止（用于 UI 按钮点击） */
   const stopInput = useCallback(() => {
-    void stopAndTranscribe()
-  }, [stopAndTranscribe])
+    stopRecording()
+  }, [stopRecording])
 
   return {
     isListening,
-    isTranscribing,
+    isModelLoading,
     voiceSupported,
     startInput,
     stopInput,
