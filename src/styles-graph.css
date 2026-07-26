@@ -820,7 +820,7 @@
 
 .srs-day-card.today {
   border-color: var(--accent);
-  background: rgba(91, 143, 185, 0.1);
+  background: rgba(13, 148, 136, 0.1);
 }
 
 .srs-day-label {
@@ -941,7 +941,7 @@
 
 .srs-completion-fill {
   height: 100%;
-  background: linear-gradient(90deg, #3f8d70, #5b8fb9);
+  background: linear-gradient(90deg, #3f8d70, #0d9488);
   border-radius: 6px;
   transition: width 0.4s ease;
 }
@@ -968,8 +968,8 @@
   align-items: center;
   gap: 4px;
   padding: 12px 8px;
-  background: rgba(91, 143, 185, 0.06);
-  border: 1px solid rgba(91, 143, 185, 0.12);
+  background: rgba(13, 148, 136, 0.06);
+  border: 1px solid rgba(13, 148, 136, 0.12);
   border-radius: 10px;
   text-align: center;
 }
