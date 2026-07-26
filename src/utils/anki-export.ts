@@ -294,29 +294,3 @@ export function exportAnkiForTopic(nodes: LearningNode[], topics: Topic[], topic
   if (topicNodes.length === 0) return
   downloadAnkiExport(topicNodes, topics)
 }
-
-/**
- * 返回导出统计信息。
- *
- * @param nodes - 要统计的学习节点数组
- * @param topics - 主题列表
- * @returns 统计信息对象：
- *   - `cardCount`：卡片总数（即节点数）
- *   - `topicCount`：涉及的独立主题数
- *   - `taggedCount`：带有至少一个标签的节点数
- */
-export function getAnkiExportStats(
-  nodes: LearningNode[],
-  topics: Topic[]
-): { cardCount: number; topicCount: number; taggedCount: number } {
-  const cardCount = nodes.length
-
-  // 只统计在 topics 列表中实际存在的主题，避免计入已删除主题的孤儿节点
-  const knownTopicIds = new Set(topics.map((t) => t.id))
-  const nodeTopicIds = new Set(nodes.map((n) => n.topic_id))
-  const topicCount = [...nodeTopicIds].filter((id) => knownTopicIds.has(id)).length
-
-  const taggedCount = nodes.filter((n) => n.tags && n.tags.length > 0).length
-
-  return { cardCount, topicCount, taggedCount }
-}
