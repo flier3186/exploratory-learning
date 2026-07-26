@@ -15,6 +15,7 @@ export function clampText(text: string, length: number) {
 
 // ===== URL Hash 配置分享 =====
 // 将 API 配置编码到 URL hash 中，方便一键分享给其他人
+// 使用 URL-safe base64 避免聊天软件对 +/= 等字符的编码问题
 
 export interface SharedConfig {
   k: string  // apiKey
@@ -24,9 +25,42 @@ export interface SharedConfig {
 
 const CONFIG_HASH_PREFIX = '#cfg='
 
+/** UTF-8 字符串 → base64（不用 spread，避免长字符串栈溢出） */
+function utf8ToBase64(str: string): string {
+  const bytes = typeof TextEncoder !== 'undefined'
+    ? new TextEncoder().encode(str)
+    : Uint8Array.from(unescape(encodeURIComponent(str)), (c) => c.charCodeAt(0))
+  let binary = ''
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
+  return btoa(binary)
+}
+
+/** base64 → UTF-8 字符串 */
+function base64ToUtf8(b64: string): string {
+  const binary = atob(b64)
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0))
+  return typeof TextDecoder !== 'undefined'
+    ? new TextDecoder().decode(bytes)
+    : decodeURIComponent(escape(binary))
+}
+
+/** 标准 base64 → URL-safe base64（- 代替 +，_ 代替 /，去掉 = 填充） */
+function toUrlSafe(b64: string): string {
+  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+/** URL-safe base64 → 标准 base64（还原字符并补齐 = 填充） */
+function fromUrlSafe(safe: string): string {
+  let b64 = safe.replace(/-/g, '+').replace(/_/g, '/')
+  // 补齐 = 填充
+  const pad = b64.length % 4
+  if (pad) b64 += '='.repeat(4 - pad)
+  return b64
+}
+
 /**
  * 将 API 配置编码为 URL hash 字符串
- * 使用 TextEncoder + btoa 进行 base64 编码
+ * 使用 URL-safe base64 编码，避免聊天软件对 +/= 等字符的编码问题
  */
 export function encodeConfigToHash(apiKey: string, apiBase: string, model: string): string {
   const config: SharedConfig = { k: apiKey }
@@ -34,9 +68,7 @@ export function encodeConfigToHash(apiKey: string, apiBase: string, model: strin
   if (model && model !== 'deepseek-v4-flash') config.m = model
   try {
     const json = JSON.stringify(config)
-    const encoded = typeof TextEncoder !== 'undefined'
-      ? btoa(String.fromCharCode(...new TextEncoder().encode(json)))
-      : btoa(unescape(encodeURIComponent(json)))
+    const encoded = toUrlSafe(utf8ToBase64(json))
     return `${CONFIG_HASH_PREFIX}${encoded}`
   } catch {
     return ''
@@ -45,15 +77,19 @@ export function encodeConfigToHash(apiKey: string, apiBase: string, model: strin
 
 /**
  * 从 URL hash 解码 API 配置
+ * 兼容 URL-safe base64 和标准 base64
  */
 export function decodeConfigFromHash(): SharedConfig | null {
   try {
     const hash = typeof window !== 'undefined' ? window.location.hash : ''
     if (!hash.startsWith(CONFIG_HASH_PREFIX)) return null
-    const encoded = hash.slice(CONFIG_HASH_PREFIX.length)
-    const json = typeof TextDecoder !== 'undefined'
-      ? new TextDecoder().decode(Uint8Array.from(atob(encoded), (c) => c.charCodeAt(0)))
-      : decodeURIComponent(escape(atob(encoded)))
+    const raw = hash.slice(CONFIG_HASH_PREFIX.length)
+    // 先尝试 URL 解码（某些平台可能对 hash 中的字符做了 URL 编码）
+    let encoded = raw
+    try { encoded = decodeURIComponent(raw) } catch { /* 不是 URL 编码，保持原样 */ }
+    // URL-safe base64 → 标准 base64
+    const b64 = fromUrlSafe(encoded)
+    const json = base64ToUtf8(b64)
     const config = JSON.parse(json) as SharedConfig
     if (!config.k || typeof config.k !== 'string') return null
     return config
