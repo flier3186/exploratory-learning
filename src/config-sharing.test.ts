@@ -85,5 +85,42 @@ describe('config sharing (utils.ts)', () => {
       })
       expect(decodeConfigFromHash()).toBeNull()
     })
+
+    it('should not contain +, /, = in encoded hash (URL-safe base64)', () => {
+      // 使用可能产生 +/= 字符的 apiKey
+      const hash = encodeConfigToHash('sk-abcd+efg/hij=', 'https://api.deepseek.com/v1/chat/completions', 'deepseek-v4-flash')
+      const encoded = hash.slice('#cfg='.length)
+      expect(encoded).not.toContain('+')
+      expect(encoded).not.toContain('/')
+      expect(encoded).not.toContain('=')
+    })
+
+    it('should decode URL-encoded hash (chat app compatibility)', () => {
+      // 先正常编码
+      const hash = encodeConfigToHash('sk-test123', '', '')
+      const encoded = hash.slice('#cfg='.length)
+      // 模拟聊天软件对特殊字符的 URL 编码（即使 URL-safe base64 不含特殊字符，
+      // 某些平台仍可能对 - 或 _ 做编码）
+      const urlEncoded = encoded.replace(/-/g, '%2D').replace(/_/g, '%5F')
+      Object.defineProperty(window, 'location', {
+        value: { ...window.location, hash: `#cfg=${urlEncoded}` },
+        writable: true,
+      })
+      const result = decodeConfigFromHash()
+      expect(result).not.toBeNull()
+      expect(result!.k).toBe('sk-test123')
+    })
+
+    it('should handle long apiKey without stack overflow', () => {
+      const longKey = 'sk-' + 'a'.repeat(200)
+      const hash = encodeConfigToHash(longKey, '', '')
+      Object.defineProperty(window, 'location', {
+        value: { ...window.location, hash },
+        writable: true,
+      })
+      const result = decodeConfigFromHash()
+      expect(result).not.toBeNull()
+      expect(result!.k).toBe(longKey)
+    })
   })
 })
