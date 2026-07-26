@@ -22,7 +22,7 @@ export const ROLE_COLORS: Record<LearningRole, string> = {
 
 // Edge colors
 export const EDGE_COLORS = {
-  child: '#5b8fb9',
+  child: '#0d9488',
   related: '#e8927c',
   prerequisite: '#3f8d70',
 }
