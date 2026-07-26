@@ -15,9 +15,65 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>探索式 AI 学习工具</title>
+    <style>
+      /* 首屏加载占位：JS 加载前立即显示，React 挂载后自动替换 */
+      #app-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, "Microsoft YaHei", sans-serif;
+        background: linear-gradient(180deg, #fafdfc 0%, #f0f7f5 100%);
+      }
+      #app-loading .loading-inner {
+        text-align: center;
+      }
+      #app-loading .loading-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #0d9488;
+        margin-bottom: 8px;
+      }
+      #app-loading .loading-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #0d9488;
+        animation: loading-pulse 1.2s ease-in-out infinite;
+      }
+      @keyframes loading-pulse {
+        0%, 100% { opacity: 0.3; transform: scale(0.8); }
+        50% { opacity: 1; transform: scale(1.2); }
+      }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div id="app-loading">
+        <div class="loading-inner">
+          <div class="loading-title">探索式学习</div>
+          <span class="loading-dot"></span>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // 白屏检测：页面加载后如果 React 8 秒内未挂载，自动刷新一次
+      // 解决移动端首次打开白屏问题（SW 缓存/网络慢导致 JS 未加载）
+      (function () {
+        var reloaded = false;
+        window.addEventListener('load', function () {
+          setTimeout(function () {
+            var app = document.getElementById('app');
+            // React 挂载后会替换 #app 的内容，如果还有 #app-loading 说明 JS 没执行
+            if (app && document.getElementById('app-loading') && !reloaded) {
+              reloaded = true;
+              window.location.reload();
+            }
+          }, 8000);
+        });
+      })();
+    </script>
   </body>
 </html>
