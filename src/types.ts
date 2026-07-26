@@ -28,47 +28,6 @@ export type ReviewFilter = 'all' | 'due' | 'uncertain' | 'starred' | 'current-to
 export type ReviewReason = '稍后复习' | '需要复习' | '还有点虚' | '未检测' | '低掌握度' | '星标回看'
 export type GenerationStatus = 'ok' | 'repaired' | 'needs_verification' | 'failed' | 'pending'
 
-export interface SpeechRecognitionResultLike {
-  isFinal: boolean
-  0: {
-    transcript: string
-  }
-}
-
-export interface SpeechRecognitionEventLike {
-  resultIndex: number
-  results: {
-    length: number
-    [index: number]: SpeechRecognitionResultLike
-  }
-}
-
-export interface SpeechRecognitionErrorEventLike {
-  error: string
-  message?: string
-}
-
-export interface SpeechRecognitionLike {
-  lang: string
-  interimResults: boolean
-  continuous: boolean
-  onstart: (() => void) | null
-  onresult: ((event: SpeechRecognitionEventLike) => void) | null
-  onend: (() => void) | null
-  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null
-  start: () => void
-  stop: () => void
-}
-
-export type SpeechRecognitionConstructor = new () => SpeechRecognitionLike
-
-declare global {
-  interface Window {
-    SpeechRecognition?: SpeechRecognitionConstructor
-    webkitSpeechRecognition?: SpeechRecognitionConstructor
-  }
-}
-
 export interface Topic {
   id: string
   title: string

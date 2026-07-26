@@ -387,6 +387,12 @@ textarea {
   50% { transform: scale(1.15); }
 }
 
+/* 转写中状态：微妙的脉冲动画 */
+.voice-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
 /* ===== 一句话结论区块 ===== */
 .conclusion-section {
   border: 1px solid rgba(223, 138, 40, 0.28);

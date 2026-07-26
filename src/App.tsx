@@ -124,7 +124,11 @@ export default function App() {
   const setNotice = app.setNotice
   const profileSummary = app.profile ? profileSummaryForPrompt(app.profile, app.selectedTopic?.id ?? null) : undefined
   const gen = useGeneration(app.state, app.selectedTopic, { addNode: app.addNode, openNode: app.openNode }, setNotice, profileSummary)
-  const voice = useVoiceInput(gen.setQuestion, setNotice)
+  const voice = useVoiceInput(gen.setQuestion, setNotice, {
+    apiBase: app.state.apiBase,
+    apiKey: app.state.apiKey,
+    model: app.state.model,
+  })
   const onboarding = useOnboarding()
 
   // P3: 周报数据
@@ -641,16 +645,16 @@ export default function App() {
                 className={voice.isListening ? 'voice-button active' : 'voice-button'}
                 onPointerDown={(e) => { e.preventDefault(); voice.startInput(gen.question) }}
                 onContextMenu={(e) => e.preventDefault()}
-                disabled={gen.isGenerating || !voice.voiceSupported}
+                disabled={gen.isGenerating || !voice.voiceSupported || voice.isTranscribing}
                 type="button"
-                aria-label={voice.isListening ? '正在聆听，松开结束' : '按住说话'}
+                aria-label={voice.isListening ? '正在录音，松开结束' : voice.isTranscribing ? '正在转写...' : '按住说话'}
               >
                 <svg className="voice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <rect x="9" y="2" width="6" height="12" rx="3" />
                   <path d="M5 10a7 7 0 0 0 14 0" />
                   <line x1="12" y1="19" x2="12" y2="22" />
                 </svg>
-                {voice.isListening ? '松开结束' : voice.voiceSupported ? '按住说话' : '语音不可用'}
+                {voice.isListening ? '松开结束' : voice.isTranscribing ? '转写中...' : !voice.voiceSupported ? '语音不可用' : '按住说话'}
               </button>
             </div>
             {gen.isGenerating && (
@@ -803,6 +807,7 @@ export default function App() {
           isSubmitting={app.feynman.isSubmitting}
           feedback={app.feynman.feedback}
           isVoiceListening={voice.isListening}
+          isVoiceTranscribing={voice.isTranscribing}
           voiceSupported={voice.voiceSupported}
           onClose={app.feynman.closeFeynman}
           onReset={app.feynman.resetFeynman}
