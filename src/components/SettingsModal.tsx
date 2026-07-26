@@ -2,6 +2,7 @@ import { useRef, useState, useCallback, useMemo } from 'react'
 import { preferenceSummary } from '../ai'
 import type { UserPreference } from '../types'
 import { generateShareLink, decodeConfigFromHash, clearConfigHash } from '../utils'
+import { Modal } from './Modal'
 
 /* ------------------------------------------------------------------ */
 /*  API 渠道预设                                                        */
@@ -220,138 +221,132 @@ export function SettingsModal(props: {
   }, [props])
 
   return (
-    <div className="modal-backdrop" onClick={props.onClose}>
-      <div className="modal settings-modal" onClick={(event) => event.stopPropagation()}>
-        <div className="modal-header">
-          <h2>设置与数据</h2>
-          <button onClick={props.onClose}>关闭</button>
-        </div>
-        <div className="settings-note">
-          <strong>本地安全说明</strong>
-          <p>API Key 只保存在当前浏览器本地；导出备份不包含 API Key；导入备份不会覆盖当前 API 地址、模型和 Key。</p>
-        </div>
+    <Modal title="设置与数据" onClose={props.onClose} className="settings-modal">
+      <div className="settings-note">
+        <strong>本地安全说明</strong>
+        <p>API Key 只保存在当前浏览器本地；导出备份不包含 API Key；导入备份不会覆盖当前 API 地址、模型和 Key。</p>
+      </div>
 
-        {configImported && (
-          <div className="config-import-banner">
-            <strong>检测到分享配置链接</strong>
-            <p>有人分享了 API 配置给你，点击下方按钮即可一键导入。</p>
-            <button className="config-import-btn" onClick={handleImportFromLink}>
-              一键导入分享的配置
-            </button>
-          </div>
-        )}
-
-        {/* ============ API 渠道预设区 ============ */}
-        <div className="api-preset-section">
-          <p className="api-preset-label">选择你的 AI 服务商</p>
-          <div className="api-preset-row">
-            {API_PRESETS.map((preset) => (
-              <button
-                key={preset.id}
-                className={`api-preset-btn${selectedPresetId === preset.id ? ' active' : ''}`}
-                style={{
-                  '--preset-color': preset.color,
-                } as React.CSSProperties}
-                onClick={() => handleSelectPreset(preset)}
-              >
-                {preset.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ============ API Key ============ */}
-        <label>
-          API Key
-          <input
-            ref={apiKeyInputRef}
-            value={props.apiKey}
-            onChange={(event) => props.onApiKeyChange(event.target.value)}
-            placeholder="粘贴你的 sk-xxx Key"
-            type="password"
-          />
-          {selectedPreset && renderKeyGuide(selectedPreset.keyGuide, selectedPreset.keyUrl)}
-        </label>
-
-        {/* ============ API 地址（预设时只读） ============ */}
-        <label>
-          API 地址
-          {isCustom ? (
-            <input value={props.apiBase} onChange={handleApiBaseChange} />
-          ) : (
-            <div className="readonly-input-wrap">
-              <input
-                readOnly
-                value={props.apiBase}
-                className="readonly-input"
-                title="预设值，切换服务商时自动填充"
-              />
-              <span className="readonly-lock" title="预设值">&#128274;</span>
-            </div>
-          )}
-        </label>
-
-        {/* ============ 模型（预设时只读） ============ */}
-        <label>
-          模型
-          {isCustom ? (
-            <input value={props.model} onChange={handleModelChange} />
-          ) : (
-            <div className="readonly-input-wrap">
-              <input
-                readOnly
-                value={props.model}
-                className="readonly-input"
-                title="预设值，切换服务商时自动填充"
-              />
-              <span className="readonly-lock" title="预设值">&#128274;</span>
-            </div>
-          )}
-        </label>
-
-        <div className="share-config-section">
-          <h3>分享配置给其他人</h3>
-          <p className="share-hint">生成一个链接发给需要测试的人，他们点开就能自动配置 API，无需手动填写。</p>
-          {!shareLink ? (
-            <button className="share-link-btn" onClick={handleGenerateShareLink}>
-              生成分享链接
-            </button>
-          ) : (
-            <div className="share-link-result">
-              <input className="share-link-input" readOnly value={shareLink} onClick={(event) => (event.target as HTMLInputElement).select()} />
-              <button className="share-link-btn" onClick={handleCopyLink}>复制链接</button>
-              <button className="share-link-btn ghost" onClick={() => { setShareLink(''); setShareMsg('') }}>取消</button>
-            </div>
-          )}
-          {shareMsg && <p className="share-msg">{shareMsg}</p>}
-        </div>
-
-        <div className="settings-grid">
-          <button onClick={props.onExport}>导出 JSON</button>
-          <button onClick={() => fileInputRef.current?.click()}>导入 JSON</button>
-          <button className="danger" onClick={props.onClearAll}>
-            清空数据
+      {configImported && (
+        <div className="config-import-banner">
+          <strong>检测到分享配置链接</strong>
+          <p>有人分享了 API 配置给你，点击下方按钮即可一键导入。</p>
+          <button className="config-import-btn" onClick={handleImportFromLink}>
+            一键导入分享的配置
           </button>
-          {props.onResetOnboarding && (
-            <button onClick={props.onResetOnboarding}>重新显示引导</button>
-          )}
         </div>
-        <input
-          ref={fileInputRef}
-          className="hidden"
-          type="file"
-          accept="application/json"
-          onChange={(event) => {
-            const file = event.target.files?.[0]
-            if (file) props.onImport(file)
-            event.currentTarget.value = ''
-          }}
-        />
-        <div className="preference-box">
-          <h3>本地偏好摘要</h3>
-          <pre>{preferenceSummary(props.preference) || '暂无偏好，使用一段时间后会自动形成。'}</pre>
+      )}
+
+      {/* ============ API 渠道预设区 ============ */}
+      <div className="api-preset-section">
+        <p className="api-preset-label">选择你的 AI 服务商</p>
+        <div className="api-preset-row">
+          {API_PRESETS.map((preset) => (
+            <button
+              key={preset.id}
+              className={`api-preset-btn${selectedPresetId === preset.id ? ' active' : ''}`}
+              style={{
+                '--preset-color': preset.color,
+              } as React.CSSProperties}
+              onClick={() => handleSelectPreset(preset)}
+            >
+              {preset.name}
+            </button>
+          ))}
         </div>
       </div>
-    </div>
+
+      {/* ============ API Key ============ */}
+      <label>
+        API Key
+        <input
+          ref={apiKeyInputRef}
+          value={props.apiKey}
+          onChange={(event) => props.onApiKeyChange(event.target.value)}
+          placeholder="粘贴你的 sk-xxx Key"
+          type="password"
+        />
+        {selectedPreset && renderKeyGuide(selectedPreset.keyGuide, selectedPreset.keyUrl)}
+      </label>
+
+      {/* ============ API 地址（预设时只读） ============ */}
+      <label>
+        API 地址
+        {isCustom ? (
+          <input value={props.apiBase} onChange={handleApiBaseChange} />
+        ) : (
+          <div className="readonly-input-wrap">
+            <input
+              readOnly
+              value={props.apiBase}
+              className="readonly-input"
+              title="预设值，切换服务商时自动填充"
+            />
+            <span className="readonly-lock" title="预设值">&#128274;</span>
+          </div>
+        )}
+      </label>
+
+      {/* ============ 模型（预设时只读） ============ */}
+      <label>
+        模型
+        {isCustom ? (
+          <input value={props.model} onChange={handleModelChange} />
+        ) : (
+          <div className="readonly-input-wrap">
+            <input
+              readOnly
+              value={props.model}
+              className="readonly-input"
+              title="预设值，切换服务商时自动填充"
+            />
+            <span className="readonly-lock" title="预设值">&#128274;</span>
+          </div>
+        )}
+      </label>
+
+      <div className="share-config-section">
+        <h3>分享配置给其他人</h3>
+        <p className="share-hint">生成一个链接发给需要测试的人，他们点开就能自动配置 API，无需手动填写。</p>
+        {!shareLink ? (
+          <button className="share-link-btn" onClick={handleGenerateShareLink}>
+            生成分享链接
+          </button>
+        ) : (
+          <div className="share-link-result">
+            <input className="share-link-input" readOnly value={shareLink} onClick={(event) => (event.target as HTMLInputElement).select()} />
+            <button className="share-link-btn" onClick={handleCopyLink}>复制链接</button>
+            <button className="share-link-btn ghost" onClick={() => { setShareLink(''); setShareMsg('') }}>取消</button>
+          </div>
+        )}
+        {shareMsg && <p className="share-msg">{shareMsg}</p>}
+      </div>
+
+      <div className="settings-grid">
+        <button onClick={props.onExport}>导出 JSON</button>
+        <button onClick={() => fileInputRef.current?.click()}>导入 JSON</button>
+        <button className="danger" onClick={props.onClearAll}>
+          清空数据
+        </button>
+        {props.onResetOnboarding && (
+          <button onClick={props.onResetOnboarding}>重新显示引导</button>
+        )}
+      </div>
+      <input
+        ref={fileInputRef}
+        className="hidden"
+        type="file"
+        accept="application/json"
+        onChange={(event) => {
+          const file = event.target.files?.[0]
+          if (file) props.onImport(file)
+          event.currentTarget.value = ''
+        }}
+      />
+      <div className="preference-box">
+        <h3>本地偏好摘要</h3>
+        <pre>{preferenceSummary(props.preference) || '暂无偏好，使用一段时间后会自动形成。'}</pre>
+      </div>
+    </Modal>
   )
 }

@@ -1,6 +1,7 @@
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { CHECK_STATUS_LABEL, ROLE_META } from '../constants'
 import type { CheckStatus, LearningNode, Topic } from '../types'
+import { Modal } from './Modal'
 
 // ---------------------------------------------------------------------------
 // Props
@@ -73,15 +74,6 @@ interface TopicGrowth {
 // ---------------------------------------------------------------------------
 
 export function GrowthTimelineModal({ nodes, topics, onClose }: GrowthTimelineModalProps) {
-  // Escape 键关闭
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
-
   // 主题标题查找表
   const topicTitleMap = useMemo(() => {
     const m = new Map<string, string>()
@@ -180,18 +172,12 @@ export function GrowthTimelineModal({ nodes, topics, onClose }: GrowthTimelineMo
 
   if (overview.totalNodes === 0) {
     return (
-      <div className="modal-backdrop" onClick={onClose}>
-        <div className="modal growth-timeline-modal" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-header">
-            <h2>知识成长时间线</h2>
-            <button onClick={onClose}>关闭</button>
-          </div>
-          <div className="growth-empty">
-            <p>还没有学习任何节点。</p>
-            <p className="growth-empty-hint">开始探索一个真实问题后，这里会记录知识树的成长轨迹。</p>
-          </div>
+      <Modal title="知识成长时间线" onClose={onClose} className="growth-timeline-modal">
+        <div className="growth-empty">
+          <p>还没有学习任何节点。</p>
+          <p className="growth-empty-hint">开始探索一个真实问题后，这里会记录知识树的成长轨迹。</p>
         </div>
-      </div>
+      </Modal>
     )
   }
 
@@ -202,15 +188,9 @@ export function GrowthTimelineModal({ nodes, topics, onClose }: GrowthTimelineMo
   const maxTopicCount = Math.max(1, ...topicGrowth.map((t) => t.count))
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal growth-timeline-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>知识成长时间线</h2>
-          <button onClick={onClose}>关闭</button>
-        </div>
-
-        {/* 1. 统计概览 */}
-        <div className="growth-overview-grid">
+    <Modal title="知识成长时间线" onClose={onClose} className="growth-timeline-modal">
+      {/* 1. 统计概览 */}
+      <div className="growth-overview-grid">
           <div className="growth-stat-card">
             <span className="growth-stat-value">{overview.totalNodes}</span>
             <span className="growth-stat-label">总节点数</span>
@@ -352,8 +332,7 @@ export function GrowthTimelineModal({ nodes, topics, onClose }: GrowthTimelineMo
             </div>
           </section>
         )}
-      </div>
-    </div>
+    </Modal>
   )
 }
 

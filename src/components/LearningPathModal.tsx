@@ -1,6 +1,7 @@
-import { memo, useEffect } from 'react'
+import { memo } from 'react'
 import type { PathStep } from '../types'
 import { CHECK_STATUS_LABEL, ROLE_META } from '../constants'
+import { Modal } from './Modal'
 
 // ---------------------------------------------------------------------------
 // Constants & helpers
@@ -95,29 +96,12 @@ const LearningPathModalInner = memo(function LearningPathModal({
   onClose,
   onOpenNode,
 }: LearningPathModalProps) {
-  // Close on Escape
-  useEffect(() => {
-    if (!isOpen) return
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose])
-
   if (!isOpen) return null
 
   const counts = categoryCounts
 
   return (
-    <div className="modal-backdrop path-modal-backdrop" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal path-modal">
-        {/* Header */}
-        <div className="modal-header">
-          <h2>学习路径推荐</h2>
-          <button onClick={onClose}>关闭</button>
-        </div>
-
+    <Modal title="学习路径推荐" onClose={onClose} className="path-modal">
         {/* Summary pills */}
         <div className="path-summary">
           <span className="path-summary-item review">
@@ -237,8 +221,7 @@ const LearningPathModalInner = memo(function LearningPathModal({
               </div>
             )}
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 })
 

@@ -34,6 +34,7 @@
   background: rgba(25, 25, 25, 0.96);
   box-shadow: var(--shadow);
   padding: 20px;
+  outline: none;
   animation: modal-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   /* Override light-theme CSS variables for dark modal background */
   --text: #f0f0f0;

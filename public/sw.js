@@ -1,5 +1,5 @@
-const CACHE_NAME = 'exploratory-learning-shell-v24'
-const CACHE_VERSION = 24
+const CACHE_NAME = 'exploratory-learning-shell-v25'
+const CACHE_VERSION = 25
 
 // 扩展 Shell 资产列表：覆盖 HTML 入口、manifest、图标、字体等关键资源
 const SHELL_ASSETS = [
@@ -108,9 +108,16 @@ self.addEventListener('install', (event) => {
       .then((cache) =>
         // 逐个缓存以避免 addAll 在单个资源失败时整体回滚
         Promise.allSettled(SHELL_ASSETS.map((asset) => cache.add(asset))),
-      )
-      .then(() => self.skipWaiting()),
+      ),
   )
+  // 不自动 skipWaiting，等待用户确认后通过 message 触发
+})
+
+// 监听来自页面的 SKIP_WAITING 消息
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting()
+  }
 })
 
 self.addEventListener('activate', (event) => {

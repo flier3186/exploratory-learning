@@ -3,6 +3,33 @@ import { useEffect, useState, useCallback } from 'react'
 const ONBOARDING_KEY = 'exploratory-learning-onboarding-v2'
 const FIRST_QUESTION_KEY = 'exploratory-learning-first-question-done'
 
+/** 安全的 localStorage 读取，失败时返回 null */
+function safeGetItem(key: string): string | null {
+  try {
+    return localStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+/** 安全的 localStorage 写入，失败时静默忽略 */
+function safeSetItem(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value)
+  } catch {
+    // ignore
+  }
+}
+
+/** 安全的 localStorage 删除，失败时静默忽略 */
+function safeRemoveItem(key: string): void {
+  try {
+    localStorage.removeItem(key)
+  } catch {
+    // ignore
+  }
+}
+
 const STEPS = [
   {
     title: '欢迎来到探索式学习',
@@ -57,55 +84,35 @@ export function useOnboarding() {
   const [showPulse, setShowPulse] = useState(false)
 
   useEffect(() => {
-    try {
-      const done = localStorage.getItem(ONBOARDING_KEY)
-      if (!done) {
-        setOpen(true)
-      }
-      // 如果引导已完成但还没问过第一个问题，显示脉冲提示
-      const firstQuestionDone = localStorage.getItem(FIRST_QUESTION_KEY)
-      if (done && !firstQuestionDone) {
-        setShowPulse(true)
-      }
-    } catch {
-      // ignore
+    const done = safeGetItem(ONBOARDING_KEY)
+    if (!done) {
+      setOpen(true)
+    }
+    // 如果引导已完成但还没问过第一个问题，显示脉冲提示
+    const firstQuestionDone = safeGetItem(FIRST_QUESTION_KEY)
+    if (done && !firstQuestionDone) {
+      setShowPulse(true)
     }
   }, [])
 
   const finish = useCallback(() => {
-    try {
-      localStorage.setItem(ONBOARDING_KEY, '1')
-    } catch {
-      // ignore
-    }
+    safeSetItem(ONBOARDING_KEY, '1')
     setOpen(false)
     // 关闭引导后，如果还没问过第一个问题，显示脉冲提示
-    try {
-      const firstQuestionDone = localStorage.getItem(FIRST_QUESTION_KEY)
-      if (!firstQuestionDone) {
-        setShowPulse(true)
-      }
-    } catch {
-      // ignore
+    const firstQuestionDone = safeGetItem(FIRST_QUESTION_KEY)
+    if (!firstQuestionDone) {
+      setShowPulse(true)
     }
   }, [])
 
   const markFirstQuestionDone = useCallback(() => {
-    try {
-      localStorage.setItem(FIRST_QUESTION_KEY, '1')
-    } catch {
-      // ignore
-    }
+    safeSetItem(FIRST_QUESTION_KEY, '1')
     setShowPulse(false)
   }, [])
 
   const reset = useCallback(() => {
-    try {
-      localStorage.removeItem(ONBOARDING_KEY)
-      localStorage.removeItem(FIRST_QUESTION_KEY)
-    } catch {
-      // ignore
-    }
+    safeRemoveItem(ONBOARDING_KEY)
+    safeRemoveItem(FIRST_QUESTION_KEY)
     setOpen(true)
     setShowPulse(false)
   }, [])

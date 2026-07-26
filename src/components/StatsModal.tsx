@@ -1,6 +1,7 @@
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { CHECK_STATUS_LABEL, ROLE_META } from '../constants'
 import type { CheckStatus, HeatmapDay, LearningNode, LearningProfile, LearningRole, SRSWeekDay, Topic, TopicCompetence } from '../types'
+import { Modal } from './Modal'
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -330,14 +331,6 @@ export function StatsModal(props: {
 }) {
   const { nodes, topics, dueReviewCount, profile, heatmap, currentStreak, longestStreak, totalActiveDays, srsWeek, onClose } = props
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
-
   const stats = useMemo(() => {
     const nodeList = Object.values(nodes)
     const totalNodes = nodeList.length
@@ -526,15 +519,9 @@ export function StatsModal(props: {
   })
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal stats-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>学习进度概览</h2>
-          <button onClick={onClose}>关闭</button>
-        </div>
-
-        {/* 1. Overview cards */}
-        <div className="stats-overview-grid">
+    <Modal title="学习进度概览" onClose={onClose} className="stats-modal">
+      {/* 1. Overview cards */}
+      <div className="stats-overview-grid">
           <div className="stat-card">
             <span className="stat-value">{topics.length}</span>
             <span className="stat-label">学习主题</span>
@@ -927,7 +914,6 @@ export function StatsModal(props: {
             </div>
           </section>
         )}
-      </div>
-    </div>
+    </Modal>
   )
 }

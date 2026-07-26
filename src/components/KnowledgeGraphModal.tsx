@@ -24,6 +24,7 @@ import {
   SELECTED_HIGHLIGHT,
 } from '../graph/colors'
 import { ROLE_META, CHECK_STATUS_LABEL } from '../constants'
+import { Modal } from './Modal'
 
 // ─── Types ──────────────────────────────────────────────────────────────
 
@@ -523,14 +524,7 @@ const KnowledgeGraphModal = memo(function KnowledgeGraphModal(
   // ─── Render ──────────────────────────────────────────────────────────
 
   return (
-    <div className="modal-backdrop graph-modal-backdrop" onClick={onClose}>
-      <div className="modal graph-modal" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className="modal-header">
-          <h2>知识图谱 <span className="graph-node-count">{graphData.nodes.length} 个节点</span></h2>
-          <button onClick={onClose}>关闭</button>
-        </div>
-
+    <Modal title={`知识图谱 · ${graphData.nodes.length} 个节点`} onClose={onClose} className="graph-modal">
         {/* Toolbar */}
         <div className="graph-toolbar">
           <div className="graph-toolbar-group">
@@ -911,8 +905,7 @@ const KnowledgeGraphModal = memo(function KnowledgeGraphModal(
             <div className="graph-hint">点击节点查看详情 · 双击居中 · 拖拽节点重新布局 · 滚轮缩放 · 拖拽背景平移</div>
           </div>
         )}
-      </div>
-    </div>
+    </Modal>
   )
 })
 

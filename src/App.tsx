@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, lazy, Suspense } from 'react'
 import type { FollowupQuestion, LearningRole, ReviewFilter } from './types'
 import { useAppState } from './hooks/useAppState'
 import { useGeneration } from './hooks/useGeneration'
@@ -6,24 +6,32 @@ import { useVoiceInput } from './hooks/useVoiceInput'
 import { useWeeklyReport } from './hooks/use-weekly-report'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { LearningCard } from './components/LearningCard'
-import { SearchModal } from './components/SearchModal'
-import { ReviewModal } from './components/ReviewModal'
 import { NodeTree } from './components/NodeTree'
-import { SettingsModal } from './components/SettingsModal'
-import { TemplateMarket, type TemplateMeta } from './components/TemplateMarket'
 import { OnboardingModal, useOnboarding } from './components/Onboarding'
-import { StatsModal } from './components/StatsModal'
-import { QuizModal } from './components/QuizModal'
-import { FeynmanModal } from './components/FeynmanModal'
-import KnowledgeGraphModal from './components/KnowledgeGraphModal'
-import LearningPathModal from './components/LearningPathModal'
-import { WeeklyReportModal } from './components/WeeklyReportModal'
-import { GrowthTimelineModal } from './components/GrowthTimelineModal'
 import { decodeConfigFromHash, clearConfigHash, generateShareLink } from './utils'
 import { STORAGE_KEY } from './constants'
-import { downloadAnkiExport, exportAnkiForTopic } from './utils/anki-export'
 import { profileSummaryForPrompt } from './learning-profile'
 import { isReviewDue } from './spaced-repetition'
+import type { TemplateMeta } from './components/TemplateMarket'
+
+// 懒加载非首屏模态框 — 减小首屏 bundle 体积
+const SearchModal = lazy(() => import('./components/SearchModal').then(m => ({ default: m.SearchModal })))
+const ReviewModal = lazy(() => import('./components/ReviewModal').then(m => ({ default: m.ReviewModal })))
+const SettingsModal = lazy(() => import('./components/SettingsModal').then(m => ({ default: m.SettingsModal })))
+const TemplateMarket = lazy(() => import('./components/TemplateMarket').then(m => ({ default: m.TemplateMarket })))
+const StatsModal = lazy(() => import('./components/StatsModal').then(m => ({ default: m.StatsModal })))
+const QuizModal = lazy(() => import('./components/QuizModal').then(m => ({ default: m.QuizModal })))
+const FeynmanModal = lazy(() => import('./components/FeynmanModal').then(m => ({ default: m.FeynmanModal })))
+const KnowledgeGraphModal = lazy(() => import('./components/KnowledgeGraphModal'))
+const LearningPathModal = lazy(() => import('./components/LearningPathModal'))
+const WeeklyReportModal = lazy(() => import('./components/WeeklyReportModal').then(m => ({ default: m.WeeklyReportModal })))
+const GrowthTimelineModal = lazy(() => import('./components/GrowthTimelineModal').then(m => ({ default: m.GrowthTimelineModal })))
+
+// Anki 导出工具按需动态导入
+async function getAnkiExport() {
+  const mod = await import('./utils/anki-export')
+  return { downloadAnkiExport: mod.downloadAnkiExport, exportAnkiForTopic: mod.exportAnkiForTopic }
+}
 
 const GENERATION_STEPS = [
   { title: '正在理解你的问题', detail: '先判断学习场景、事实风险和适合的讲解方式。', width: '28%' },
@@ -366,8 +374,10 @@ export default function App() {
       setNotice('还没有学习节点，无法导出。')
       return
     }
-    downloadAnkiExport(nodeList, app.state.topics)
-    setNotice(`已导出 ${nodeList.length} 张 Anki 卡片，在 Anki 中选择「导入」即可使用。`)
+    getAnkiExport().then(({ downloadAnkiExport }) => {
+      downloadAnkiExport(nodeList, app.state.topics)
+      setNotice(`已导出 ${nodeList.length} 张 Anki 卡片，在 Anki 中选择「导入」即可使用。`)
+    })
   }, [app.state.nodes, app.state.topics, setNotice])
 
   // P3: Anki 导出（单主题）
@@ -377,8 +387,10 @@ export default function App() {
       setNotice('这个主题下没有节点，无法导出。')
       return
     }
-    exportAnkiForTopic(Object.values(app.state.nodes), app.state.topics, topicId)
-    setNotice(`已导出「${app.state.topics.find((t) => t.id === topicId)?.title || '主题'}」的 ${nodeList.length} 张 Anki 卡片。`)
+    getAnkiExport().then(({ exportAnkiForTopic }) => {
+      exportAnkiForTopic(Object.values(app.state.nodes), app.state.topics, topicId)
+      setNotice(`已导出「${app.state.topics.find((t) => t.id === topicId)?.title || '主题'}」的 ${nodeList.length} 张 Anki 卡片。`)
+    })
   }, [app.state.nodes, app.state.topics, setNotice])
 
   // 开始闪测：从待复习节点中选择
@@ -718,6 +730,7 @@ export default function App() {
           </div>
         )}
 
+        <Suspense fallback={null}>
         {settingsOpen && (
           <SettingsModal
             apiKey={app.state.apiKey}
@@ -868,6 +881,7 @@ export default function App() {
             onClose={() => setGrowthTimelineOpen(false)}
           />
         )}
+        </Suspense>
       </div>
     </ErrorBoundary>
   )

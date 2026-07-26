@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { Modal } from './Modal'
 
 export interface TemplateMeta {
   id: string
@@ -56,14 +57,8 @@ export function TemplateMarket(props: {
   if (!props.open) return null
 
   return (
-    <div className="modal-backdrop" onClick={props.onClose}>
-      <div className="modal template-market" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>模板市场</h2>
-          <button onClick={props.onClose}>关闭</button>
-        </div>
-
-        <div className="template-market-intro">
+    <Modal title="模板市场" onClose={props.onClose} className="template-market">
+      <div className="template-market-intro">
           <p>活模板是领域专家的提问思维路径。导入后，你可以沿着推荐路线追问，也可以自由岔出探索。</p>
         </div>
 
@@ -112,7 +107,6 @@ export function TemplateMarket(props: {
             }}
           />
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 }

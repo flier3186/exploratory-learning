@@ -3,6 +3,7 @@ import { CHECK_STATUS_LABEL } from '../constants'
 import type { CheckStatus } from '../types'
 import { generateReportText } from '../hooks/use-weekly-report'
 import type { WeeklyReportData } from '../hooks/use-weekly-report'
+import { Modal } from './Modal'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -80,15 +81,6 @@ export interface WeeklyReportModalProps {
 export function WeeklyReportModal({ report, onClose }: WeeklyReportModalProps) {
   const [toast, setToast] = useState<string | null>(null)
 
-  // Escape 键关闭
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
-
   // 成功提示自动消失
   useEffect(() => {
     if (!toast) return
@@ -131,20 +123,13 @@ export function WeeklyReportModal({ report, onClose }: WeeklyReportModalProps) {
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal weekly-report-modal" onClick={(e) => e.stopPropagation()}>
-        {/* 头部：标题 + 日期范围 + 关闭按钮 */}
-        <div className="modal-header">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <h2>学习周报</h2>
-            <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-              {formatDateRange(report.periodStart, report.periodEnd)}
-            </span>
-          </div>
-          <button onClick={onClose}>关闭</button>
-        </div>
+    <Modal title="学习周报" onClose={onClose} className="weekly-report-modal">
+      {/* 日期范围副标题（替代原 header 中的额外信息） */}
+      <div style={{ marginTop: '-4px', marginBottom: '14px', fontSize: '0.85rem', color: 'var(--muted)' }}>
+        {formatDateRange(report.periodStart, report.periodEnd)}
+      </div>
 
-        {/* 1. 概览卡片网格 */}
+      {/* 1. 概览卡片网格 */}
         <div
           className="stats-overview-grid"
           style={{ gridTemplateColumns: 'repeat(5, 1fr)', marginBottom: '18px' }}
@@ -466,7 +451,6 @@ export function WeeklyReportModal({ report, onClose }: WeeklyReportModalProps) {
             </span>
           )}
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 }
