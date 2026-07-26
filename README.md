@@ -32,7 +32,7 @@ project/
 │   ├── app-icon.svg                     # PWA 应用图标
 │   ├── favicon.svg
 │   ├── manifest.webmanifest             # PWA 清单
-│   └── sw.js                            # Service Worker（离线缓存 v23）
+│   └── sw.js                            # Service Worker（离线缓存 v24）
 ├── src/
 │   ├── components/                      # UI 组件层
 │   │   ├── ErrorBoundary.tsx            # 错误边界 + 降级 UI
@@ -256,7 +256,7 @@ API Key 只保存在浏览器本地，不会被导出到 JSON 备份。配置可
 
 ## PWA
 
-应用已配置 Service Worker（版本 v23），支持离线访问已缓存内容：
+应用已配置 Service Worker（版本 v24），支持离线访问已缓存内容：
 
 - Shell 资源（HTML/manifest/图标）安装时缓存
 - JS/CSS 构建产物走 stale-while-revalidate，带版本检查（`x-sw-cache-version` header）
@@ -295,7 +295,7 @@ API Key 只保存在浏览器本地，不会被导出到 JSON 备份。配置可
 
 ### SW 版本号管理
 
-每次部署必须递增 `public/sw.js` 中的 `CACHE_NAME` 和 `CACHE_VERSION`，否则用户浏览器不会刷新缓存。当前版本：v23。
+每次部署必须递增 `public/sw.js` 中的 `CACHE_NAME` 和 `CACHE_VERSION`，否则用户浏览器不会刷新缓存。当前版本：v24。
 
 ### 新增功能时的注意事项
 
