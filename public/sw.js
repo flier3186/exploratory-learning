@@ -1,5 +1,5 @@
-const CACHE_NAME = 'exploratory-learning-shell-v23'
-const CACHE_VERSION = 23
+const CACHE_NAME = 'exploratory-learning-shell-v24'
+const CACHE_VERSION = 24
 
 // 扩展 Shell 资产列表：覆盖 HTML 入口、manifest、图标、字体等关键资源
 const SHELL_ASSETS = [
@@ -25,7 +25,7 @@ const OFFLINE_FALLBACK_HTML = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#df8a28" />
+  <meta name="theme-color" content="#0d9488" />
   <title>离线中 - 探索式 AI 学习工具</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
