@@ -18,6 +18,7 @@ export const FeynmanModal = memo(function FeynmanModal(props: {
   isSubmitting: boolean
   feedback: FeynmanFeedback | null
   isVoiceListening?: boolean
+  voiceSupported?: boolean
   onClose: () => void
   onReset: () => void
   onExplanationChange: (text: string) => void
@@ -27,7 +28,7 @@ export const FeynmanModal = memo(function FeynmanModal(props: {
 }) {
   const {
     isOpen, activeNode, explanation, mode,
-    isSubmitting, feedback, isVoiceListening,
+    isSubmitting, feedback, isVoiceListening, voiceSupported,
     onClose, onReset, onExplanationChange, onVoiceInputStart, onVoiceInputStop, onSubmit,
   } = props
 
@@ -67,7 +68,7 @@ export const FeynmanModal = memo(function FeynmanModal(props: {
                   onPointerLeave={onVoiceInputStop}
                   onPointerCancel={onVoiceInputStop}
                   onContextMenu={(e) => e.preventDefault()}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !voiceSupported}
                   type="button"
                   aria-label={isVoiceListening ? '正在聆听，松开结束' : '按住说话'}
                 >
@@ -76,7 +77,7 @@ export const FeynmanModal = memo(function FeynmanModal(props: {
                     <path d="M5 10a7 7 0 0 0 14 0" />
                     <line x1="12" y1="19" x2="12" y2="22" />
                   </svg>
-                  {isVoiceListening ? '松开结束' : '按住说话'}
+                  {isVoiceListening ? '松开结束' : voiceSupported === false ? '语音不可用' : '按住说话'}
                 </button>
                 <button
                   className="feynman-submit-btn"
