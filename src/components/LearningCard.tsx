@@ -46,6 +46,8 @@ export const LearningCard = memo(function LearningCard(props: {
   const [ttsSupported] = useState(() => typeof window !== 'undefined' && 'speechSynthesis' in window)
   const voicesRef = useRef<SpeechSynthesisVoice[]>([])
   const speakTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isSpeakingRef = useRef(false) // 用 ref 而非 state 做安全网检查，避免闭包陷阱
+  const keepAliveRef = useRef<ReturnType<typeof setInterval> | null>(null) // Chrome 15 秒静音 bug 修复
   const masteryOptions: Array<{ value: 1 | 2 | 3 | 4 | 5; label: string }> = [
     { value: 1, label: '刚接触' },
     { value: 2, label: '有点印象' },
@@ -68,13 +70,16 @@ export const LearningCard = memo(function LearningCard(props: {
       window.speechSynthesis?.cancel()
       window.speechSynthesis?.removeEventListener?.('voiceschanged', loadVoices)
       if (speakTimerRef.current) clearTimeout(speakTimerRef.current)
+      if (keepAliveRef.current) clearInterval(keepAliveRef.current)
     }
   }, [])
 
   // Stop speech and reset state when node changes
   useEffect(() => {
     window.speechSynthesis?.cancel()
+    isSpeakingRef.current = false
     setIsSpeaking(false)
+    if (keepAliveRef.current) { clearInterval(keepAliveRef.current); keepAliveRef.current = null }
     setSelectedFollowupIds([])
   }, [node.id])
 
@@ -94,9 +99,11 @@ export const LearningCard = memo(function LearningCard(props: {
       onNotice?.('当前浏览器不支持语音朗读，建议使用 Chrome 或 Edge 浏览器。')
       return
     }
-    if (isSpeaking) {
+    if (isSpeakingRef.current) {
       window.speechSynthesis.cancel()
       if (speakTimerRef.current) clearTimeout(speakTimerRef.current)
+      if (keepAliveRef.current) { clearInterval(keepAliveRef.current); keepAliveRef.current = null }
+      isSpeakingRef.current = false
       setIsSpeaking(false)
       return
     }
@@ -130,33 +137,70 @@ export const LearningCard = memo(function LearningCard(props: {
       null
     // 显式赋值 voice（某些浏览器不赋值会导致静默失败）
     if (zhVoice) utterance.voice = zhVoice
-    utterance.onend = () => setIsSpeaking(false)
+
+    utterance.onstart = () => {
+      isSpeakingRef.current = true
+      setIsSpeaking(true)
+      // Chrome 已知 bug：朗读超过 ~15 秒后会静音。
+      // 解决方案：每隔 10 秒 pause→resume 刷新引擎状态
+      if (keepAliveRef.current) clearInterval(keepAliveRef.current)
+      keepAliveRef.current = setInterval(() => {
+        if (window.speechSynthesis.speaking) {
+          window.speechSynthesis.pause()
+          window.speechSynthesis.resume()
+        } else {
+          // 已经朗读完了，清理定时器
+          if (keepAliveRef.current) { clearInterval(keepAliveRef.current); keepAliveRef.current = null }
+        }
+      }, 10000)
+    }
+    utterance.onend = () => {
+      isSpeakingRef.current = false
+      setIsSpeaking(false)
+      if (keepAliveRef.current) { clearInterval(keepAliveRef.current); keepAliveRef.current = null }
+    }
     utterance.onerror = (event) => {
+      isSpeakingRef.current = false
+      setIsSpeaking(false)
+      if (keepAliveRef.current) { clearInterval(keepAliveRef.current); keepAliveRef.current = null }
       // Only show error state for real errors, not cancellation
       if (event.error !== 'canceled' && event.error !== 'interrupted') {
-        setIsSpeaking(false)
         onNotice?.('语音朗读出现问题，可尝试刷新页面或换用其他浏览器。')
       }
     }
-    // Cancel any ongoing speech first, then speak after a brief delay
-    // This avoids race conditions on mobile browsers
-    window.speechSynthesis.cancel()
-    if (speakTimerRef.current) clearTimeout(speakTimerRef.current)
-    speakTimerRef.current = window.setTimeout(() => {
-      try {
-        window.speechSynthesis.speak(utterance)
-        setIsSpeaking(true)
-        // 安全网：如果 3 秒后 onstart 从未触发且仍标记为 speaking，可能静默失败了
-        setTimeout(() => {
-          if (isSpeaking && !window.speechSynthesis.speaking) {
-            setIsSpeaking(false)
-          }
-        }, 3000)
-      } catch {
-        setIsSpeaking(false)
-        onNotice?.('语音朗读启动失败，可尝试刷新页面或换用其他浏览器。')
-      }
-    }, 200)
+
+    // 关键修复：必须同步调用 speak()，不能放在 setTimeout 里。
+    // iOS Safari 要求 speechSynthesis.speak() 在用户手势调用栈内执行，
+    // setTimeout 会断开调用链导致静默失败。
+    try {
+      // 先取消之前的朗读（如果有），再立即开始新的
+      window.speechSynthesis.cancel()
+      // 用 microtask 确保 cancel 完成后再 speak（同帧内执行，不断开用户手势链）
+      Promise.resolve().then(() => {
+        try {
+          window.speechSynthesis.speak(utterance)
+          // 乐观更新 UI（onstart 会在实际开始时再次确认）
+          isSpeakingRef.current = true
+          setIsSpeaking(true)
+          // 安全网：3 秒后如果 onstart 从未触发且 speechSynthesis 不在 speaking，说明静默失败了
+          if (speakTimerRef.current) clearTimeout(speakTimerRef.current)
+          speakTimerRef.current = setTimeout(() => {
+            if (isSpeakingRef.current && !window.speechSynthesis.speaking) {
+              isSpeakingRef.current = false
+              setIsSpeaking(false)
+              onNotice?.('语音朗读未能启动，请尝试再次点击或换用 Chrome 浏览器。')
+            }
+          }, 3000)
+        } catch {
+          isSpeakingRef.current = false
+          setIsSpeaking(false)
+          onNotice?.('语音朗读启动失败，可尝试刷新页面或换用其他浏览器。')
+        }
+      })
+    } catch {
+      isSpeakingRef.current = false
+      onNotice?.('语音朗读启动失败，可尝试刷新页面或换用其他浏览器。')
+    }
   }
 
   function toggleFollowupSelection(followupId: string) {
