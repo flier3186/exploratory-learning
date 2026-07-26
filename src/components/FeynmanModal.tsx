@@ -21,13 +21,14 @@ export const FeynmanModal = memo(function FeynmanModal(props: {
   onClose: () => void
   onReset: () => void
   onExplanationChange: (text: string) => void
-  onVoiceInput: () => void
+  onVoiceInputStart: () => void
+  onVoiceInputStop: () => void
   onSubmit: () => void
 }) {
   const {
     isOpen, activeNode, explanation, mode,
     isSubmitting, feedback, isVoiceListening,
-    onClose, onReset, onExplanationChange, onVoiceInput, onSubmit,
+    onClose, onReset, onExplanationChange, onVoiceInputStart, onVoiceInputStop, onSubmit,
   } = props
 
   if (!isOpen || !activeNode) return null
@@ -61,16 +62,21 @@ export const FeynmanModal = memo(function FeynmanModal(props: {
                 <span className="feynman-mode-label">{mode === 'voice' ? '语音输入' : '文字输入'}</span>
                 <button
                   className={`feynman-voice-btn ${isVoiceListening ? 'active' : ''}`}
-                  onClick={onVoiceInput}
+                  onPointerDown={(e) => { e.preventDefault(); onVoiceInputStart() }}
+                  onPointerUp={onVoiceInputStop}
+                  onPointerLeave={onVoiceInputStop}
+                  onPointerCancel={onVoiceInputStop}
+                  onContextMenu={(e) => e.preventDefault()}
                   disabled={isSubmitting}
                   type="button"
+                  aria-label={isVoiceListening ? '正在聆听，松开结束' : '按住说话'}
                 >
                   <svg className="voice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <rect x="9" y="2" width="6" height="12" rx="3" />
                     <path d="M5 10a7 7 0 0 0 14 0" />
                     <line x1="12" y1="19" x2="12" y2="22" />
                   </svg>
-                  {isVoiceListening ? '正在聆听…' : '语音输入'}
+                  {isVoiceListening ? '松开结束' : '按住说话'}
                 </button>
                 <button
                   className="feynman-submit-btn"
