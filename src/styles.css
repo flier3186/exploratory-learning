@@ -9,8 +9,8 @@
   --muted: #6b8299;
   --faint: #94a7b8;
   --line: rgba(90, 120, 150, 0.18);
-  --accent: #5b8fb9;
-  --accent-2: #3f8d70;
+  --accent: #0d9488;
+  --accent-2: #f59e0b;
   --accent-3: #e8927c;
   --danger: #c0564f;
   --shadow: 0 24px 70px rgba(90, 120, 150, 0.13);
@@ -27,7 +27,7 @@ body {
   min-height: 100vh;
   color: var(--text);
   background:
-    radial-gradient(circle at 12% 8%, rgba(91, 143, 185, 0.10), transparent 24rem),
+    radial-gradient(circle at 12% 8%, rgba(13, 148, 136, 0.10), transparent 24rem),
     radial-gradient(circle at 92% 16%, rgba(63, 141, 112, 0.08), transparent 24rem),
     linear-gradient(135deg, #edf1f5 0%, #f5f7fa 48%, #e4eaf0 100%);
 }
@@ -61,8 +61,8 @@ textarea {
 
 input:focus,
 textarea:focus {
-  border-color: rgba(91, 143, 185, 0.58);
-  box-shadow: 0 0 0 4px rgba(91, 143, 185, 0.10);
+  border-color: rgba(13, 148, 136, 0.58);
+  box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.10);
 }
 
 .hidden {
