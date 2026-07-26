@@ -94,18 +94,23 @@ export default function App() {
   const advancedUnlockTime = useRef(0)
   const [reviewJustUnlocked, setReviewJustUnlocked] = useState(false)
   const [advancedJustUnlocked, setAdvancedJustUnlocked] = useState(false)
+  const unlockTimersRef = useRef<ReturnType<typeof setTimeout>[]>([])
   useEffect(() => {
     if (hasNodes && !reviewUnlockTime.current) {
       reviewUnlockTime.current = Date.now()
       setReviewJustUnlocked(true)
       setNotice('新功能解锁：侧边栏新增了「复习」入口，帮你回顾已学知识。')
-      setTimeout(() => setReviewJustUnlocked(false), 4000)
+      unlockTimersRef.current.push(setTimeout(() => setReviewJustUnlocked(false), 4000))
     }
     if (hasEnoughNodes && !advancedUnlockTime.current) {
       advancedUnlockTime.current = Date.now()
       setAdvancedJustUnlocked(true)
       setNotice('新功能解锁：侧边栏新增了「路径」「图谱」「统计」，帮你从全局视角掌握学习进度。')
-      setTimeout(() => setAdvancedJustUnlocked(false), 4000)
+      unlockTimersRef.current.push(setTimeout(() => setAdvancedJustUnlocked(false), 4000))
+    }
+    return () => {
+      unlockTimersRef.current.forEach(clearTimeout)
+      unlockTimersRef.current = []
     }
   }, [hasNodes, hasEnoughNodes])
 
