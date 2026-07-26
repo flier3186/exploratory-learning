@@ -24,6 +24,12 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
+      - name: Download Vosk speech model
+        run: |
+          mkdir -p public/models
+          curl -L -o public/models/model.tar.gz "https://github.com/flier3186/exploratory-learning/releases/download/vosk-model-cn-v1/model.tar.gz"
+          ls -lh public/models/
+
       - name: Build
         run: npm run build
 
