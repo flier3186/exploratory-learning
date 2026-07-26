@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { CHECK_STATUS_LABEL, ROLE_META } from '../constants'
 import type { CheckStatus, LearningNode, Topic } from '../types'
 import { Modal } from './Modal'
+import { startOfDay, DAY_MS } from '../utils'
 
 // ---------------------------------------------------------------------------
 // Props
@@ -17,8 +18,6 @@ interface GrowthTimelineModalProps {
 // Constants & helpers
 // ---------------------------------------------------------------------------
 
-const DAY_MS = 24 * 60 * 60 * 1000
-
 const STATUS_COLORS: Record<CheckStatus, string> = {
   understood: '#3f8d70',
   uncertain: '#b8751a',
@@ -32,13 +31,6 @@ const MILESTONES: { index: number; label: string; description: string }[] = [
   { index: 50, label: '知识树初具规模', description: '已经有了枝繁叶茂的模样' },
   { index: 100, label: '知识森林', description: '从一棵树长成了一片森林' },
 ]
-
-/** 将时间戳对齐到当天 00:00:00 */
-function startOfDay(ts: number): number {
-  const d = new Date(ts)
-  d.setHours(0, 0, 0, 0)
-  return d.getTime()
-}
 
 /** 中文日期格式：7月25日 */
 function formatChineseDate(ts: number): string {
