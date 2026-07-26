@@ -107,8 +107,8 @@ function RadarChart({ topics }: { topics: TopicCompetence[] }) {
       {/* Data polygon */}
       <polygon
         points={dataPolygon}
-        fill="rgba(91, 143, 185, 0.2)"
-        stroke="#5b8fb9"
+        fill="rgba(13, 148, 136, 0.2)"
+        stroke="#0d9488"
         strokeWidth={1.5}
       />
       {/* Data points */}
@@ -117,7 +117,7 @@ function RadarChart({ topics }: { topics: TopicCompetence[] }) {
         const fraction = Math.min(t.avg_confidence / 5, 1)
         const x = cx + radius * fraction * Math.cos(angle)
         const y = cy + radius * fraction * Math.sin(angle)
-        return <circle key={i} cx={x} cy={y} r={3} fill="#5b8fb9" />
+        return <circle key={i} cx={x} cy={y} r={3} fill="#0d9488" />
       })}
       {/* Labels */}
       {labelPositions.map((pos, i) => (
@@ -748,7 +748,7 @@ export function StatsModal(props: {
                     width={12}
                     height={12}
                     rx={2}
-                    fill="#5b8fb9"
+                    fill="#0d9488"
                     opacity={opacity}
                   >
                     <title>{day.date}: {day.count} 个节点</title>
@@ -759,7 +759,7 @@ export function StatsModal(props: {
             <div className="heatmap-labels">
               <span>少</span>
               {[0, 1, 2, 3, 4].map(l => (
-                <rect key={l} width={10} height={10} rx={2} fill="#5b8fb9" opacity={[0, 0.25, 0.5, 0.75, 1][l]} />
+                <rect key={l} width={10} height={10} rx={2} fill="#0d9488" opacity={[0, 0.25, 0.5, 0.75, 1][l]} />
               ))}
               <span>多</span>
             </div>
