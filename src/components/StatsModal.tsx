@@ -2,9 +2,9 @@ import { useMemo } from 'react'
 import { CHECK_STATUS_LABEL, ROLE_META } from '../constants'
 import type { CheckStatus, HeatmapDay, LearningNode, LearningProfile, LearningRole, SRSWeekDay, Topic, TopicCompetence } from '../types'
 import { Modal } from './Modal'
+import { startOfDay, DAY_MS } from '../utils'
 
-const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
-const DAY_MS = 24 * 60 * 60 * 1000
+const SEVEN_DAYS_MS = 7 * DAY_MS
 
 const CHECK_STATUS_ORDER: CheckStatus[] = ['understood', 'uncertain', 'needs_review', 'untested']
 
@@ -37,12 +37,6 @@ const ROLE_BAR_COLORS: Record<LearningRole, string> = {
 }
 
 const CONFIDENCE_COLORS = ['#b84040', '#c47a30', '#b8751a', '#7da850', '#3f8d70']
-
-function startOfDay(ts: number): number {
-  const d = new Date(ts)
-  d.setHours(0, 0, 0, 0)
-  return d.getTime()
-}
 
 // ---------------------------------------------------------------------------
 // RadarChart (inline sub-component)
