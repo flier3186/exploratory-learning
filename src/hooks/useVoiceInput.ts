@@ -117,6 +117,44 @@ async function downloadAndMergeModel(
   return blobUrl
 }
 
+/** 通过 script 标签加载 vosk-browser（绕过 Vite 动态 import 的 5.7MB chunk 问题） */
+function loadVoskScript(): Promise<VoskModule> {
+  return new Promise((resolve, reject) => {
+    // 如果已加载，直接返回
+    const w = window as unknown as { Vosk?: VoskModule }
+    if (w.Vosk) {
+      resolve(w.Vosk)
+      return
+    }
+
+    // 检查是否已有 script 标签
+    const existing = document.getElementById('vosk-script') as HTMLScriptElement | null
+    if (existing) {
+      existing.addEventListener('load', () => {
+        if (w.Vosk) resolve(w.Vosk)
+        else reject(new Error('Vosk 脚本加载完成但未定义全局变量'))
+      })
+      existing.addEventListener('error', () => reject(new Error('Vosk 脚本加载失败')))
+      return
+    }
+
+    // 创建 script 标签
+    const script = document.createElement('script')
+    script.id = 'vosk-script'
+    script.src = '/vosk.js'
+    script.async = true
+    script.onload = () => {
+      if (w.Vosk) {
+        resolve(w.Vosk)
+      } else {
+        reject(new Error('Vosk 脚本加载完成但未定义全局变量'))
+      }
+    }
+    script.onerror = () => reject(new Error('Vosk 脚本加载失败，请检查网络连接'))
+    document.head.appendChild(script)
+  })
+}
+
 /** 加载 Vosk 模型（单例模式，避免重复下载） */
 async function loadVoskModel(
   onProgress?: (msg: string) => void,
@@ -133,10 +171,10 @@ async function loadVoskModel(
 
   // 开始加载
   globalModelLoading = (async () => {
-    onProgress?.('正在加载语音识别模型（约42MB，首次加载需要一些时间）...')
+    onProgress?.('正在加载语音识别引擎...')
 
-    // 动态导入 vosk-browser
-    const Vosk = (await import('vosk-browser')) as unknown as VoskModule
+    // 通过 script 标签加载 vosk-browser（不依赖 Vite 动态 import）
+    const Vosk = await loadVoskScript()
 
     // 从分片下载并合并模型
     const modelUrl = await downloadAndMergeModel(onProgress)
