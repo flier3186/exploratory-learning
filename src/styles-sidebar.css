@@ -806,7 +806,20 @@ button,
     z-index: 999;
     background: rgba(48, 39, 25, 0.25);
     backdrop-filter: blur(2px);
+    touch-action: none; /* 阻止触摸滑动穿透到背景 */
   }
+}
+
+/* JS 检测的移动端布局下也显示遮罩层
+   覆盖 761px-1100px 范围（平板/窄桌面），与 .mobile-layout 断点一致 */
+.app-shell.mobile-layout .sidebar-overlay {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(48, 39, 25, 0.25);
+  backdrop-filter: blur(2px);
+  touch-action: none; /* 阻止触摸滑动穿透到背景 */
 }
 
 /* SRS 到期节点标记 */
