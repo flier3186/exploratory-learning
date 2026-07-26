@@ -8,8 +8,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { LearningCard } from './components/LearningCard'
 import { NodeTree } from './components/NodeTree'
 import { OnboardingModal, useOnboarding } from './components/Onboarding'
-import { decodeConfigFromHash, clearConfigHash, generateShareLink } from './utils'
-import { STORAGE_KEY } from './constants'
+import { decodeConfigFromHash, clearConfigHash, generateShareLink, copyToClipboard } from './utils'
 import { profileSummaryForPrompt } from './learning-profile'
 import { isReviewDue } from './spaced-repetition'
 import type { TemplateMeta } from './components/TemplateMarket'
@@ -150,23 +149,21 @@ export default function App() {
     }, 150)
   }, [app, setNotice])
 
-  // Auto-import config from shared URL hash
+  // Auto-import config from shared URL hash — 直接更新 React 状态，不 reload
+  // 之前用 window.location.reload() 在移动端不可靠（SW 拦截/WebView 限制），
+  // 导致分享链接打开后需要手动刷新才能看到 API 配置
   useEffect(() => {
     const config = decodeConfigFromHash()
-    if (config) {
-      // 先保存到 localStorage，再刷新页面让完整应用加载
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY)
-        const state = saved ? JSON.parse(saved) : {}
-        state.apiKey = config.k
-        if (config.b) state.apiBase = config.b
-        if (config.m) state.model = config.m
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-      } catch { /* ignore parse error */ }
-      clearConfigHash()
-      // 分享链接首次打开，刷新页面确保 SW 注册和新配置加载
-      window.location.reload()
-    }
+    if (!config) return
+    // 直接通过 patchState 更新 React 状态，auto-persist 会自动写入 localStorage
+    app.patchState((draft) => ({
+      ...draft,
+      apiKey: config.k,
+      apiBase: config.b || draft.apiBase,
+      model: config.m || draft.model,
+    }))
+    clearConfigHash()
+    setNotice('已从分享链接导入 API 配置，可以直接开始学习。')
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Keyboard shortcuts
@@ -260,7 +257,7 @@ export default function App() {
     void gen.generateFollowupBatch(node.id, followups)
   }, [app.selectedNode, gen])
 
-  const handleQuickShare = useCallback(() => {
+  const handleQuickShare = useCallback(async () => {
     if (!app.state.apiKey.trim()) {
       setNotice('请先在设置中填写 API Key，然后才能分享给朋友。')
       setSettingsOpen(true)
@@ -271,14 +268,16 @@ export default function App() {
       setNotice('生成分享链接失败，请重试。')
       return
     }
-    navigator.clipboard.writeText(link).then(
-      () => setNotice('分享链接已复制到剪贴板！发给朋友打开即可直接使用，无需配置 API。'),
-      () => {
-        // Fallback: open settings so user can see the link
-        setSettingsOpen(true)
-        setNotice('复制失败，请在设置中手动复制分享链接。')
-      },
-    )
+
+    // 三级复制降级：Clipboard API → execCommand → Web Share API
+    const ok = await copyToClipboard(link, '探索式学习 API 配置')
+    if (ok) {
+      setNotice('分享链接已复制到剪贴板！发给朋友打开即可直接使用，无需配置 API。')
+    } else {
+      // 全部失败：打开设置面板让用户手动复制
+      setSettingsOpen(true)
+      setNotice('复制不可用，请在设置中手动复制分享链接。')
+    }
   }, [app.state.apiKey, app.state.apiBase, app.state.model, setNotice])
 
   const handleExportData = useCallback(() => {
@@ -414,12 +413,11 @@ export default function App() {
   }, [app])
 
   // 费曼语音输入（按住说话）
+  // 注意：松开停止由 useVoiceInput hook 内部的 document 级 pointerup 监听器处理
+  // 不需要组件层传 onVoiceInputStop，避免冗余
   const handleFeynmanVoiceStart = useCallback(() => {
     voice.startInput(app.feynman.explanation)
   }, [voice, app.feynman.explanation])
-  const handleFeynmanVoiceStop = useCallback(() => {
-    voice.stopInput()
-  }, [voice])
 
   const searchResults = app.searchResults(searchQuery, roleFilter)
   const reviewResults = app.reviewResults(reviewFilter)
@@ -642,9 +640,6 @@ export default function App() {
               <button
                 className={voice.isListening ? 'voice-button active' : 'voice-button'}
                 onPointerDown={(e) => { e.preventDefault(); voice.startInput(gen.question) }}
-                onPointerUp={voice.stopInput}
-                onPointerLeave={voice.stopInput}
-                onPointerCancel={voice.stopInput}
                 onContextMenu={(e) => e.preventDefault()}
                 disabled={gen.isGenerating || !voice.voiceSupported}
                 type="button"
@@ -813,7 +808,6 @@ export default function App() {
           onReset={app.feynman.resetFeynman}
           onExplanationChange={app.feynman.setExplanation}
           onVoiceInputStart={handleFeynmanVoiceStart}
-          onVoiceInputStop={handleFeynmanVoiceStop}
           onSubmit={() => void app.feynman.submitExplanation()}
         />
 
