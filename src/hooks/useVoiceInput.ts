@@ -345,21 +345,21 @@ export function useVoiceInput(
         setIsModelLoading(false)
       }
 
-      // 如果在加载模型期间用户已经松开了按钮，直接返回
+      // 如果在加载模型期间用户已经松开了按钮，提示用户再次按下
       if (!isListeningRef.current) {
+        onNotice('语音模型已就绪，请再次按住按钮说话。')
         return
       }
 
       const model = modelRef.current
 
-      // 2. 获取麦克风权限
+      // 2. 获取麦克风权限（不指定 sampleRate，移动端浏览器通常不支持自定义采样率）
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: false,
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           channelCount: 1,
-          sampleRate: 16000,
         },
       })
       mediaStreamRef.current = mediaStream
@@ -371,16 +371,36 @@ export function useVoiceInput(
         return
       }
 
-      // 3. 创建 AudioContext
+      // 3. 创建 AudioContext（移动端浏览器不支持指定 sampleRate，使用默认值）
       const AudioCtxClass = getAudioContextClass()
       if (!AudioCtxClass) {
         throw new Error('浏览器不支持 AudioContext')
       }
-      const audioContext = new AudioCtxClass({ sampleRate: 16000 })
+      // 不指定 sampleRate，使用浏览器默认值（通常 44100 或 48000）
+      // Vosk 识别器内部会处理重采样
+      const audioContext = new AudioCtxClass()
       audioContextRef.current = audioContext
 
-      // 4. 创建识别器
-      const recognizer = new model.KaldiRecognizer(16000)
+      // 移动端浏览器中 AudioContext 默认是 suspended 状态
+      // 必须显式 resume() 才能开始音频处理
+      if (audioContext.state === 'suspended') {
+        try {
+          await audioContext.resume()
+        } catch (resumeErr) {
+          console.error('[VoiceInput] AudioContext.resume() failed:', resumeErr)
+        }
+      }
+
+      // 如果在 resume 期间用户已经松开了按钮，清理并返回
+      if (!isListeningRef.current) {
+        audioContext.close()
+        audioContextRef.current = null
+        return
+      }
+
+      // 4. 创建识别器（使用 AudioContext 的实际采样率，Vosk 会自动重采样）
+      const actualSampleRate = audioContext.sampleRate
+      const recognizer = new model.KaldiRecognizer(actualSampleRate)
       recognizerRef.current = recognizer
 
       recognizer.on('result', (message) => {
