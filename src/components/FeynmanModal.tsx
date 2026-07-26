@@ -19,7 +19,7 @@ export const FeynmanModal = memo(function FeynmanModal(props: {
   isSubmitting: boolean
   feedback: FeynmanFeedback | null
   isVoiceListening?: boolean
-  isVoiceTranscribing?: boolean
+  isVoiceModelLoading?: boolean
   voiceSupported?: boolean
   onClose: () => void
   onReset: () => void
@@ -29,7 +29,7 @@ export const FeynmanModal = memo(function FeynmanModal(props: {
 }) {
   const {
     isOpen, activeNode, explanation, mode,
-    isSubmitting, feedback, isVoiceListening, isVoiceTranscribing, voiceSupported,
+    isSubmitting, feedback, isVoiceListening, isVoiceModelLoading, voiceSupported,
     onClose, onReset, onExplanationChange, onVoiceInputStart, onSubmit,
   } = props
 
@@ -60,16 +60,16 @@ export const FeynmanModal = memo(function FeynmanModal(props: {
                 className={`feynman-voice-btn ${isVoiceListening ? 'active' : ''}`}
                 onPointerDown={(e) => { e.preventDefault(); onVoiceInputStart() }}
                 onContextMenu={(e) => e.preventDefault()}
-                disabled={isSubmitting || !voiceSupported || isVoiceTranscribing}
+                disabled={isSubmitting || !voiceSupported || isVoiceModelLoading}
                 type="button"
-                aria-label={isVoiceListening ? '正在录音，松开结束' : isVoiceTranscribing ? '正在转写...' : '按住说话'}
+                aria-label={isVoiceListening ? '正在聆听，松开结束' : isVoiceModelLoading ? '正在加载语音模型...' : '按住说话'}
               >
                 <svg className="voice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <rect x="9" y="2" width="6" height="12" rx="3" />
                   <path d="M5 10a7 7 0 0 0 14 0" />
                   <line x1="12" y1="19" x2="12" y2="22" />
                 </svg>
-                {isVoiceListening ? '松开结束' : isVoiceTranscribing ? '转写中...' : voiceSupported === false ? '语音不可用' : '按住说话'}
+                {isVoiceListening ? '松开结束' : isVoiceModelLoading ? '加载模型...' : voiceSupported === false ? '语音不可用' : '按住说话'}
               </button>
               <button
                 className="feynman-submit-btn"
