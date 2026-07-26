@@ -1,5 +1,5 @@
-const CACHE_NAME = 'exploratory-learning-shell-v22'
-const CACHE_VERSION = 22
+const CACHE_NAME = 'exploratory-learning-shell-v23'
+const CACHE_VERSION = 23
 
 // 扩展 Shell 资产列表：覆盖 HTML 入口、manifest、图标、字体等关键资源
 const SHELL_ASSETS = [
@@ -54,7 +54,7 @@ const OFFLINE_FALLBACK_HTML = `<!DOCTYPE html>
     .retry-btn {
       margin-top: 24px;
       padding: 12px 28px;
-      background: #5b8fb9;
+      background: #0d9488;
       color: #fff;
       border: none;
       border-radius: 12px;
@@ -62,7 +62,7 @@ const OFFLINE_FALLBACK_HTML = `<!DOCTYPE html>
       cursor: pointer;
       transition: background 0.2s;
     }
-    .retry-btn:hover { background: #4a7da6; }
+    .retry-btn:hover { background: #0f766e; }
   </style>
 </head>
 <body>
