@@ -33,18 +33,24 @@ export function useVoiceInput(
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
   const speechBaseRef = useRef('')
   const finalTranscriptRef = useRef('')
+  const interimRef = useRef('')
+  // 关键：用 ref 跟踪 listening 状态，避免 state 异步更新导致的竞态
+  // 场景：快速松开→按下时，state 还没更新，startInput 闭包读到旧值导致第二次按下被忽略
+  const isListeningRef = useRef(false)
 
   useEffect(() => {
     setVoiceSupported(Boolean(window.SpeechRecognition || window.webkitSpeechRecognition))
     return () => {
       try { recognitionRef.current?.stop() } catch { /* ignore */ }
       recognitionRef.current = null
+      isListeningRef.current = false
     }
   }, [])
 
   /** 开始语音识别（按下按钮时调用） */
   const startInput = useCallback((currentText: string) => {
-    if (isListening) return
+    // 用 ref 判断，避免 state 异步更新导致的竞态
+    if (isListeningRef.current) return
 
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!Recognition) {
@@ -54,6 +60,7 @@ export function useVoiceInput(
 
     speechBaseRef.current = currentText.trim() ? `${currentText.trim()}\n` : ''
     finalTranscriptRef.current = ''
+    interimRef.current = ''
 
     const recognition = new Recognition()
     recognition.lang = 'zh-CN'
@@ -71,6 +78,7 @@ export function useVoiceInput(
           interim += result[0].transcript
         }
       }
+      interimRef.current = interim
       const MAX_LENGTH = 500
       const raw = `${speechBaseRef.current}${finalTranscriptRef.current}${interim}`.trimStart()
       const combined = raw.length > MAX_LENGTH ? raw.slice(0, MAX_LENGTH) : raw
@@ -80,6 +88,9 @@ export function useVoiceInput(
     recognition.onerror = (event) => {
       const errorType = event.error || 'unknown'
       if (errorType === 'no-speech' || errorType === 'aborted') return
+      // 关键：error 后同步重置状态，避免 UI 卡在"松开结束"
+      isListeningRef.current = false
+      setIsListening(false)
       if (errorType === 'not-allowed' || errorType === 'service-not-allowed') {
         onNotice('麦克风权限被拒绝了，请在浏览器设置里允许使用麦克风。')
       } else if (errorType === 'network') {
@@ -91,10 +102,15 @@ export function useVoiceInput(
       }
     }
 
-    // onend 仅做兜底清理，不是主要状态更新路径
+    // onend 做兜底清理：如果识别器自行结束但状态还没重置，在此修正
     recognition.onend = () => {
       if (recognitionRef.current === recognition) {
         recognitionRef.current = null
+      }
+      // 兜底：识别器自行结束（超时/错误后）但用户还按着按钮，重置 UI 状态
+      if (isListeningRef.current) {
+        isListeningRef.current = false
+        setIsListening(false)
       }
     }
 
@@ -102,26 +118,33 @@ export function useVoiceInput(
     try {
       recognition.start()
     } catch {
-      // start() 可能因为太快重复调用而抛异常，静默处理
+      // start() 失败时，清理状态，不要让 UI 卡在 listening
+      recognitionRef.current = null
+      isListeningRef.current = false
+      setIsListening(false)
+      return
     }
 
     // 关键：同步立即触发震动 + 设为 listening
     // 不等 onstart 回调（很多浏览器不触发 onstart，或延迟严重）
     haptic(30)
+    isListeningRef.current = true
     setIsListening(true)
-  }, [isListening, onTranscript, onNotice])
+  }, [onTranscript, onNotice])
 
   /** 停止语音识别（松开按钮时调用） */
   const stopInput = useCallback(() => {
     // 关键：同步立即重置状态 + 震动
     // 不依赖 onend 回调（很多环境 onend 不触发，导致 UI 卡死）
     haptic([20, 40, 20])
+    isListeningRef.current = false
     setIsListening(false)
 
-    // 写入最终文本
-    if (finalTranscriptRef.current) {
+    // 写入最终文本：优先 final，fallback 到 interim（用户说完立即松开时 final 可能还没生成）
+    const textToCommit = finalTranscriptRef.current || interimRef.current
+    if (textToCommit) {
       const MAX_LENGTH = 500
-      const raw = `${speechBaseRef.current}${finalTranscriptRef.current}`.trimStart()
+      const raw = `${speechBaseRef.current}${textToCommit}`.trimStart()
       const combined = raw.length > MAX_LENGTH ? raw.slice(0, MAX_LENGTH) : raw
       onTranscript(combined)
     }
