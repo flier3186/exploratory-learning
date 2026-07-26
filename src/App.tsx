@@ -20,6 +20,7 @@ import LearningPathModal from './components/LearningPathModal'
 import { WeeklyReportModal } from './components/WeeklyReportModal'
 import { GrowthTimelineModal } from './components/GrowthTimelineModal'
 import { decodeConfigFromHash, clearConfigHash, generateShareLink } from './utils'
+import { STORAGE_KEY } from './constants'
 import { downloadAnkiExport, exportAnkiForTopic } from './utils/anki-export'
 import { profileSummaryForPrompt } from './learning-profile'
 import { isReviewDue } from './spaced-repetition'
@@ -113,12 +114,12 @@ export default function App() {
     if (config) {
       // 先保存到 localStorage，再刷新页面让完整应用加载
       try {
-        const saved = localStorage.getItem('exploratory-learning-state')
+        const saved = localStorage.getItem(STORAGE_KEY)
         const state = saved ? JSON.parse(saved) : {}
         state.apiKey = config.k
         if (config.b) state.apiBase = config.b
         if (config.m) state.model = config.m
-        localStorage.setItem('exploratory-learning-state', JSON.stringify(state))
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
       } catch { /* ignore parse error */ }
       clearConfigHash()
       // 分享链接首次打开，刷新页面确保 SW 注册和新配置加载
