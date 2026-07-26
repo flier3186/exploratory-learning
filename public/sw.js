@@ -1,5 +1,5 @@
-const CACHE_NAME = 'exploratory-learning-shell-v25'
-const CACHE_VERSION = 25
+const CACHE_NAME = 'exploratory-learning-shell-v27'
+const CACHE_VERSION = 27
 
 // 扩展 Shell 资产列表：覆盖 HTML 入口、manifest、图标、字体等关键资源
 const SHELL_ASSETS = [
@@ -110,10 +110,12 @@ self.addEventListener('install', (event) => {
         Promise.allSettled(SHELL_ASSETS.map((asset) => cache.add(asset))),
       ),
   )
-  // 不自动 skipWaiting，等待用户确认后通过 message 触发
+  // 立即激活新 SW，确保用户尽快拿到最新缓存策略
+  // 配合 main.tsx 的 controllerchange → reload，用户会自动刷新一次
+  self.skipWaiting()
 })
 
-// 监听来自页面的 SKIP_WAITING 消息
+// 监听来自页面的 SKIP_WAITING 消息（保留兼容，用于 toast 手动刷新）
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting()
@@ -210,13 +212,38 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // 导航请求：网络优先，失败时回退到缓存的首页，再失败显示离线提示
+  // 导航请求：cache-first with background revalidation
+  // 有缓存时立即返回（秒开），无缓存时走网络
+  // 解决移动端首次打开需刷新的问题：
+  //   之前 network-first 在慢网络下白屏，用户需手动刷新
+  //   现在 cache-first 让返回访客秒开页面，后台更新缓存供下次使用
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() =>
-        caches.open(CACHE_NAME).then((cache) =>
-          safeCacheMatch(cache, event.request).then((cached) => cached || safeCacheMatch(cache, '/')),
-        ),
+      caches.open(CACHE_NAME).then((cache) =>
+        safeCacheMatch(cache, event.request).then((cached) => {
+          // 后台更新缓存（不阻塞当前请求返回）
+          const networkFetch = fetch(event.request)
+            .then((response) => {
+              if (response && response.ok) {
+                const versionedResponse = new Response(response.body, response)
+                versionedResponse.headers.set('x-sw-cache-version', String(CACHE_VERSION))
+                cache.put(event.request, versionedResponse.clone())
+                // 同时更新根路径缓存，作为导航回退
+                cache.put(new Request('/'), versionedResponse.clone())
+              }
+              return response
+            })
+            .catch(() => null)
+
+          if (cached) {
+            // 有缓存：立即返回，后台静默更新
+            return cached
+          }
+          // 无缓存：走网络，失败时回退到缓存的 '/' 或离线页
+          return networkFetch.then((r) =>
+            r || cache.match('/').then((rootCached) => rootCached || offlineFallbackResponse()),
+          )
+        }),
       ),
     )
     return
