@@ -334,6 +334,11 @@ textarea {
   border: 1px solid var(--line);
   transition: 0.18s ease;
   font-weight: 600;
+  /* 按住说话：阻止触摸滚动和长按菜单 */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .voice-button:hover,
@@ -341,6 +346,14 @@ textarea {
   transform: translateY(-1px);
   border-color: rgba(255, 176, 0, 0.45);
   background: rgba(255, 176, 0, 0.13);
+}
+
+/* 按下瞬间的视觉反馈 */
+.voice-button:active:not(.active):not(:disabled),
+.listen-button:active:not(.active):not(:disabled) {
+  transform: scale(0.96);
+  background: rgba(255, 176, 0, 0.2);
+  border-color: rgba(255, 176, 0, 0.6);
 }
 
 .voice-button.active,
@@ -351,6 +364,7 @@ textarea {
   font-weight: 800;
   box-shadow: 0 0 0 4px rgba(116, 211, 174, 0.12);
   animation: voice-pulse 1.5s ease-in-out infinite;
+  transform: scale(0.96);
 }
 
 @keyframes voice-pulse {
