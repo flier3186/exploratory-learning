@@ -1,7 +1,7 @@
 import { useRef, useState, useCallback, useMemo } from 'react'
 import { preferenceSummary } from '../ai'
 import type { UserPreference } from '../types'
-import { generateShareLink, decodeConfigFromHash, clearConfigHash } from '../utils'
+import { generateShareLink, decodeConfigFromHash, clearConfigHash, copyToClipboard } from '../utils'
 import { Modal } from './Modal'
 
 /* ------------------------------------------------------------------ */
@@ -194,12 +194,22 @@ export function SettingsModal(props: {
     }
   }, [props.apiKey, props.apiBase, props.model])
 
-  const handleCopyLink = useCallback(() => {
+  /** 三级复制降级：clipboard API → execCommand → Web Share API */
+  const handleCopyLink = useCallback(async () => {
     if (!shareLink) return
-    navigator.clipboard.writeText(shareLink).then(
-      () => setShareMsg('已复制到剪贴板！发给需要配置的人即可。'),
-      () => setShareMsg('复制失败，请手动选中链接复制。'),
-    )
+
+    const ok = await copyToClipboard(shareLink, '探索式学习 API 配置')
+    if (ok) {
+      setShareMsg('已复制到剪贴板！发给需要配置的人即可。')
+    } else {
+      // 全部失败：选中文本方便手动操作
+      const input = document.querySelector('.share-link-input') as HTMLInputElement | null
+      if (input) {
+        input.focus()
+        input.select()
+      }
+      setShareMsg('复制不可用，已选中链接请手动复制。')
+    }
   }, [shareLink])
 
   const handleImportFromLink = useCallback(() => {
@@ -265,6 +275,10 @@ export function SettingsModal(props: {
           onChange={(event) => props.onApiKeyChange(event.target.value)}
           placeholder="粘贴你的 sk-xxx Key"
           type="password"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
         />
         {selectedPreset && renderKeyGuide(selectedPreset.keyGuide, selectedPreset.keyUrl)}
       </label>
