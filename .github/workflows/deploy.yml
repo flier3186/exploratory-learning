@@ -24,10 +24,27 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Download Vosk speech model
+      - name: Download and split Vosk speech model
         run: |
           mkdir -p public/models
-          curl -L -o public/models/model.tar.gz "https://github.com/flier3186/exploratory-learning/releases/download/vosk-model-cn-v1/model.tar.gz"
+          echo "Downloading model from GitHub Release..."
+          curl -L -o /tmp/model.tar.gz "https://github.com/flier3186/exploratory-learning/releases/download/vosk-model-cn-v1/model.tar.gz"
+          echo "Model size: $(du -h /tmp/model.tar.gz)"
+          echo "Splitting model into 24MB chunks (Cloudflare Pages 26.2MB limit)..."
+          split -b 24M -d -a 1 /tmp/model.tar.gz /tmp/model.part
+          # Rename parts: model.part0 -> model.tar.gz.part1, model.part1 -> model.tar.gz.part2
+          i=1
+          for part in /tmp/model.part*; do
+            mv "$part" "public/models/model.tar.gz.part$i"
+            i=$((i + 1))
+          done
+          # Generate manifest
+          TOTAL_SIZE=$(stat -c%s /tmp/model.tar.gz)
+          NUM_PARTS=$(ls public/models/model.tar.gz.part* | wc -l)
+          echo "{\"total_size\": $TOTAL_SIZE, \"num_parts\": $NUM_PARTS, \"parts\": [\"model.tar.gz.part1\", \"model.tar.gz.part2\"]}" > public/models/manifest.json
+          echo "Generated manifest:"
+          cat public/models/manifest.json
+          echo "Files in public/models/:"
           ls -lh public/models/
 
       - name: Build
