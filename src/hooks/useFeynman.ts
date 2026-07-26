@@ -41,12 +41,6 @@ export function useFeynman({ state, setState, setNotice }: UseFeynmanParams) {
     setIsSubmitting(false)
   }, [])
 
-  // 设置语音转文字结果
-  const setVoiceExplanation = useCallback((text: string) => {
-    setExplanation(text)
-    setMode('voice')
-  }, [])
-
   // 提交费曼解释，请求 AI 评估
   const submitExplanation = useCallback(async () => {
     if (!activeNode || !explanation.trim() || isSubmitting) return
@@ -143,7 +137,6 @@ export function useFeynman({ state, setState, setNotice }: UseFeynmanParams) {
     openFeynman,
     closeFeynman,
     setExplanation,
-    setVoiceExplanation,
     submitExplanation,
     resetFeynman,
   }
