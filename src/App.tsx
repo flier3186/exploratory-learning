@@ -367,10 +367,13 @@ export default function App() {
     setQuizOpen(true)
   }, [app])
 
-  // 费曼语音输入
-  const handleFeynmanVoice = useCallback(() => {
-    voice.toggleVoiceInput(app.feynman.explanation)
+  // 费曼语音输入（按住说话）
+  const handleFeynmanVoiceStart = useCallback(() => {
+    voice.startInput(app.feynman.explanation)
   }, [voice, app.feynman.explanation])
+  const handleFeynmanVoiceStop = useCallback(() => {
+    voice.stopInput()
+  }, [voice])
 
   const searchResults = app.searchResults(searchQuery, roleFilter)
   const reviewResults = app.reviewResults(reviewFilter)
@@ -590,13 +593,23 @@ export default function App() {
               <button disabled={gen.isGenerating || !gen.question.trim()} onClick={() => handleGenerate(gen.question, app.selectedNode?.id || null)}>
                 {gen.isGenerating ? '生成中...' : app.selectedNode ? '作为子节点追问' : '生成学习卡片'}
               </button>
-              <button className={voice.isListening ? 'voice-button active' : 'voice-button'} onClick={() => voice.toggleVoiceInput(gen.question)} disabled={gen.isGenerating} type="button">
+              <button
+                className={voice.isListening ? 'voice-button active' : 'voice-button'}
+                onPointerDown={(e) => { e.preventDefault(); voice.startInput(gen.question) }}
+                onPointerUp={voice.stopInput}
+                onPointerLeave={voice.stopInput}
+                onPointerCancel={voice.stopInput}
+                onContextMenu={(e) => e.preventDefault()}
+                disabled={gen.isGenerating || !voice.voiceSupported}
+                type="button"
+                aria-label={voice.isListening ? '正在聆听，松开结束' : '按住说话'}
+              >
                 <svg className="voice-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <rect x="9" y="2" width="6" height="12" rx="3" />
                   <path d="M5 10a7 7 0 0 0 14 0" />
                   <line x1="12" y1="19" x2="12" y2="22" />
                 </svg>
-                {voice.isListening ? '正在聆听…' : voice.voiceSupported ? '语音输入' : '语音不可用'}
+                {voice.isListening ? '松开结束' : voice.voiceSupported ? '按住说话' : '语音不可用'}
               </button>
             </div>
             {gen.isGenerating && (
@@ -751,7 +764,8 @@ export default function App() {
           onClose={app.feynman.closeFeynman}
           onReset={app.feynman.resetFeynman}
           onExplanationChange={app.feynman.setExplanation}
-          onVoiceInput={handleFeynmanVoice}
+          onVoiceInputStart={handleFeynmanVoiceStart}
+          onVoiceInputStop={handleFeynmanVoiceStop}
           onSubmit={() => void app.feynman.submitExplanation()}
         />
 
