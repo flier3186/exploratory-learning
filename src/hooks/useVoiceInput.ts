@@ -38,9 +38,10 @@ interface VoskModule {
 }
 
 // 模型 URL — 同源加载（部署时从 GitHub Release 下载到 public/models/）
-// 避免 CORS 问题：GitHub Release 资产不支持 Access-Control-Allow-Origin
-// deploy.yml 在构建时自动下载模型到 public/models/model.tar.gz
-const MODEL_URL = '/models/model.tar.gz'
+// Cloudflare Pages 单文件限制 26.2MB，模型 42MB 需拆分为 2 个分片
+// deploy.yml 在构建时自动下载模型并拆分到 public/models/
+const MODEL_BASE = '/models'
+const MODEL_MANIFEST = `${MODEL_BASE}/manifest.json`
 
 // 全局模型单例（避免重复加载）
 let globalModel: VoskModel | null = null
@@ -78,6 +79,44 @@ function getAudioContextClass(): typeof AudioContext | null {
   return null
 }
 
+/** 从分片下载并合并模型文件，返回 Blob URL */
+async function downloadAndMergeModel(
+  onProgress?: (msg: string) => void,
+): Promise<string> {
+  // 获取 manifest
+  onProgress?.('正在获取模型清单...')
+  const manifestResp = await fetch(MODEL_MANIFEST)
+  if (!manifestResp.ok) {
+    throw new Error(`无法获取模型清单: ${manifestResp.status}`)
+  }
+  const manifest = (await manifestResp.json()) as {
+    total_size: number
+    num_parts: number
+    parts: string[]
+  }
+
+  // 逐个下载分片
+  const chunks: ArrayBuffer[] = []
+  for (let i = 0; i < manifest.parts.length; i++) {
+    const partName = manifest.parts[i]
+    onProgress?.(`正在下载模型分片 ${i + 1}/${manifest.parts.length}...`)
+    const partResp = await fetch(`${MODEL_BASE}/${partName}`)
+    if (!partResp.ok) {
+      throw new Error(`下载分片 ${i + 1} 失败: ${partResp.status}`)
+    }
+    const buf = await partResp.arrayBuffer()
+    chunks.push(buf)
+  }
+
+  // 合并分片
+  onProgress?.('正在合并模型文件...')
+  const blob = new Blob(chunks, { type: 'application/gzip' })
+  const blobUrl = URL.createObjectURL(blob)
+
+  // 注意：Blob URL 在页面关闭时自动释放，无需手动清理
+  return blobUrl
+}
+
 /** 加载 Vosk 模型（单例模式，避免重复下载） */
 async function loadVoskModel(
   onProgress?: (msg: string) => void,
@@ -99,8 +138,11 @@ async function loadVoskModel(
     // 动态导入 vosk-browser
     const Vosk = (await import('vosk-browser')) as unknown as VoskModule
 
+    // 从分片下载并合并模型
+    const modelUrl = await downloadAndMergeModel(onProgress)
+
     // 创建模型
-    const model = await Vosk.createModel(MODEL_URL, -1) // -1 = Warning log level
+    const model = await Vosk.createModel(modelUrl, -1) // -1 = Warning log level
 
     // 等待模型就绪
     if (!model.ready) {
