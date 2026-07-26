@@ -357,11 +357,21 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.18s ease;
+  /* 按住说话：阻止触摸滚动和长按菜单 */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 .feynman-voice-btn:hover {
   background: #ede9fe;
   border-color: #a78bfa;
   transform: translateY(-1px);
+}
+.feynman-voice-btn:active:not(.active):not(:disabled) {
+  transform: scale(0.96);
+  background: #ddd6fe;
+  border-color: #a78bfa;
 }
 .feynman-voice-btn.active {
   background: #7c3aed;
@@ -369,6 +379,7 @@
   border-color: #7c3aed;
   box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15);
   animation: feynman-voice-pulse 1.5s ease-in-out infinite;
+  transform: scale(0.96);
 }
 .feynman-voice-btn.active .voice-icon {
   animation: mic-bounce 0.8s ease-in-out infinite;
